@@ -1,0 +1,7 @@
+.bmad-core/*
+.claude/*
+.cursor/*
+.vscode/*
+docs/*
+opencode.jsonc
+.DS_Store
