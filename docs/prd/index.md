@@ -1,0 +1,22 @@
+# Mini AI App Builder Product Requirements Document (PRD)
+
+## Table of Contents
+
+- [Mini AI App Builder Product Requirements Document (PRD)](#table-of-contents)
+  - [Goals and Background Context](./goals-and-background-context.md)
+    - [Goals](./goals-and-background-context.md#goals)
+    - [Background Context](./goals-and-background-context.md#background-context)
+    - [Change Log](./goals-and-background-context.md#change-log)
+  - [Requirements](./requirements.md)
+    - [Functional](./requirements.md#functional)
+    - [Non-Functional](./requirements.md#non-functional)
+    - [Security Requirements](./requirements.md#security-requirements)
+    - [Reliability Requirements](./requirements.md#reliability-requirements)
+  - [User Interface Design Goals](./user-interface-design-goals.md)
+  - [Technical Assumptions](./technical-assumptions.md)
+  - [Operational Requirements](./operational-requirements.md)
+  - [Next Steps](./next-steps.md)
+    - [UX Expert Prompt](./next-steps.md#ux-expert-prompt)
+    - [Architect Prompt](./next-steps.md#architect-prompt)
+  - [Epic List](./epic-list.md)
+  - [Epic 1: Core AI-to-UI Generation](./epic-1-core-ai-to-ui-generation.md)
