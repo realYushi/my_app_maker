@@ -62,7 +62,7 @@ export class ErrorLoggingService {
         return 'parsing';
       }
       if (error.message.includes('API')) {
-        return 'llm_api';
+        return 'gemini_api';
       }
       if (error.message.includes('network') || error.message.includes('fetch')) {
         return 'network';

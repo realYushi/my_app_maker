@@ -7,10 +7,10 @@ global.fetch = jest.fn();
 // Mock the config to prevent API key requirement
 jest.mock('../config', () => ({
   config: {
-    openai: {
+    gemini: {
       apiKey: 'test-api-key',
-      baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-4',
+      baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+      model: 'gemini-2.0-flash-exp',
       timeout: 30000
     }
   }
@@ -40,21 +40,23 @@ describe('AIService', () => {
 
   describe('extractRequirements', () => {
     const validUserText = 'I want to build a task management app for teams';
-    const mockLLMResponse = {
-      choices: [{
-        message: {
-          content: JSON.stringify({
-            appName: 'Team Task Manager',
-            entities: [
-              { name: 'Task', attributes: ['id', 'title', 'description'] }
-            ],
-            userRoles: [
-              { name: 'Manager', description: 'Manages team tasks' }
-            ],
-            features: [
-              { name: 'Task Creation', description: 'Create new tasks' }
-            ]
-          })
+    const mockGeminiResponse = {
+      candidates: [{
+        content: {
+          parts: [{
+            text: JSON.stringify({
+              appName: 'Team Task Manager',
+              entities: [
+                { name: 'Task', attributes: ['id', 'title', 'description'] }
+              ],
+              userRoles: [
+                { name: 'Manager', description: 'Manages team tasks' }
+              ],
+              features: [
+                { name: 'Task Creation', description: 'Create new tasks' }
+              ]
+            })
+          }]
         }
       }]
     };
@@ -62,7 +64,7 @@ describe('AIService', () => {
     it('should successfully extract requirements from valid input', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockLLMResponse)
+        json: () => Promise.resolve(mockGeminiResponse)
       } as Response);
 
       const result = await aiService.extractRequirements(validUserText);
@@ -81,11 +83,10 @@ describe('AIService', () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.openai.com/v1/chat/completions',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=test-api-key',
         expect.objectContaining({
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer test-api-key',
             'Content-Type': 'application/json'
           }
         })
@@ -111,7 +112,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('LLM API error: 401 Unauthorized', 401)
+        new AIServiceError('Gemini API error: 401 Unauthorized', 401)
       );
     });
 
@@ -128,7 +129,7 @@ describe('AIService', () => {
       );
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('LLM API request timeout', 504)
+        new AIServiceError('Gemini API request timeout', 504)
       );
 
       global.AbortController = originalAbortController;
@@ -136,9 +137,11 @@ describe('AIService', () => {
 
     it('should handle invalid JSON responses', async () => {
       const invalidJsonResponse = {
-        choices: [{
-          message: {
-            content: 'Invalid JSON response from LLM'
+        candidates: [{
+          content: {
+            parts: [{
+              text: 'Invalid JSON response from Gemini'
+            }]
           }
         }]
       };
@@ -149,18 +152,20 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid JSON response from LLM API', 500)
+        new AIServiceError('Invalid JSON response from Gemini API', 500)
       );
     });
 
     it('should handle missing required fields in response', async () => {
       const incompleteResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              appName: 'Test App'
-              // Missing entities, userRoles, features
-            })
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                appName: 'Test App'
+                // Missing entities, userRoles, features
+              })
+            }]
           }
         }]
       };
@@ -175,9 +180,9 @@ describe('AIService', () => {
       );
     });
 
-    it('should handle empty response from LLM', async () => {
+    it('should handle empty response from Gemini', async () => {
       const emptyResponse = {
-        choices: []
+        candidates: []
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -186,7 +191,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('No response from LLM API', 500)
+        new AIServiceError('No response from Gemini API', 500)
       );
     });
 
@@ -194,20 +199,22 @@ describe('AIService', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network connection failed'));
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('LLM API request failed: Network connection failed', 500)
+        new AIServiceError('Gemini API request failed: Network connection failed', 500)
       );
     });
 
     it('should validate response structure thoroughly', async () => {
       const invalidStructureResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              appName: '',
-              entities: [],
-              userRoles: [],
-              features: []
-            })
+        candidates: [{
+          content: {
+            parts: [{
+              text: JSON.stringify({
+                appName: '',
+                entities: [],
+                userRoles: [],
+                features: []
+              })
+            }]
           }
         }]
       };
@@ -218,7 +225,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid appName in LLM response', 500)
+        new AIServiceError('Invalid appName in Gemini response', 500)
       );
     });
   });

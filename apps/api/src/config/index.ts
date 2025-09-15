@@ -5,11 +5,11 @@
 export const config = {
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
-  openai: {
-    apiKey: process.env.OPENAI_API_KEY,
-    baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
-    model: process.env.OPENAI_MODEL || 'gpt-4',
-    timeout: parseInt(process.env.OPENAI_TIMEOUT || '30000', 10),
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY,
+    baseUrl: process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta',
+    model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp',
+    timeout: parseInt(process.env.GEMINI_TIMEOUT || '30000', 10),
   },
   mongodb: {
     uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/mini-ai-app-builder',

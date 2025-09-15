@@ -2,20 +2,24 @@ import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import { config } from '../config';
 import { errorLoggingService } from './error-logging.service';
 
-export interface LLMRequest {
-  model: string;
-  messages: Array<{
-    role: 'system' | 'user' | 'assistant';
-    content: string;
+export interface GeminiRequest {
+  contents: Array<{
+    parts: Array<{
+      text: string;
+    }>;
   }>;
-  temperature?: number;
-  max_tokens?: number;
+  generationConfig?: {
+    temperature?: number;
+    maxOutputTokens?: number;
+  };
 }
 
-export interface LLMResponse {
-  choices: Array<{
-    message: {
-      content: string;
+export interface GeminiResponse {
+  candidates: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
     };
   }>;
 }
@@ -38,14 +42,14 @@ export class AIService {
   private readonly timeout: number;
 
   constructor() {
-    if (!config.openai.apiKey) {
-      throw new AIServiceError('OpenAI API key is required', 500);
+    if (!config.gemini.apiKey) {
+      throw new AIServiceError('Gemini API key is required', 500);
     }
 
-    this.baseUrl = config.openai.baseUrl;
-    this.apiKey = config.openai.apiKey;
-    this.model = config.openai.model;
-    this.timeout = config.openai.timeout;
+    this.baseUrl = config.gemini.baseUrl;
+    this.apiKey = config.gemini.apiKey;
+    this.model = config.gemini.model;
+    this.timeout = config.gemini.timeout;
   }
 
   private getExtractionPrompt(): string {
@@ -91,55 +95,52 @@ Respond with only the JSON object, no other text.`;
       throw new AIServiceError('User text input is required', 400);
     }
 
-    const requestBody: LLMRequest = {
-      model: this.model,
-      messages: [
+    const requestBody: GeminiRequest = {
+      contents: [
         {
-          role: 'system',
-          content: this.getExtractionPrompt()
-        },
-        {
-          role: 'user',
-          content: userText.trim()
+          parts: [{
+            text: `${this.getExtractionPrompt()}\n\nUser Request: ${userText.trim()}`
+          }]
         }
       ],
-      temperature: 0.3,
-      max_tokens: 2000
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2000
+      }
     };
+
+    let timeoutId: NodeJS.Timeout | undefined;
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+      timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
         const errorText = await response.text();
         throw new AIServiceError(
-          `LLM API error: ${response.status} ${response.statusText}`,
+          `Gemini API error: ${response.status} ${response.statusText}`,
           response.status
         );
       }
 
-      const data = await response.json() as LLMResponse;
+      const data = await response.json() as GeminiResponse;
 
-      if (!data.choices || data.choices.length === 0) {
-        throw new AIServiceError('No response from LLM API', 500);
+      if (!data.candidates || data.candidates.length === 0) {
+        throw new AIServiceError('No response from Gemini API', 500);
       }
 
-      const content = data.choices[0].message.content;
+      const content = data.candidates[0].content.parts[0].text;
       if (!content) {
-        throw new AIServiceError('Empty response from LLM API', 500);
+        throw new AIServiceError('Empty response from Gemini API', 500);
       }
 
       // Parse the JSON response
@@ -148,7 +149,7 @@ Respond with only the JSON object, no other text.`;
         parsedResult = JSON.parse(content.trim());
       } catch (parseError) {
         throw new AIServiceError(
-          'Invalid JSON response from LLM API',
+          'Invalid JSON response from Gemini API',
           500,
           parseError as Error
         );
@@ -173,22 +174,27 @@ Respond with only the JSON object, no other text.`;
 
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          throw new AIServiceError('LLM API request timeout', 504, error);
+          throw new AIServiceError('Gemini API request timeout', 504, error);
         }
         throw new AIServiceError(
-          `LLM API request failed: ${error.message}`,
+          `Gemini API request failed: ${error.message}`,
           500,
           error
         );
       }
 
       throw new AIServiceError('Unknown error occurred', 500);
+    } finally {
+      // Always clear the timeout to prevent Jest open handles
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
   }
 
   private validateGenerationResult(result: any): void {
     if (!result || typeof result !== 'object') {
-      throw new AIServiceError('Invalid response structure from LLM', 500);
+      throw new AIServiceError('Invalid response structure from Gemini', 500);
     }
 
     const required = ['appName', 'entities', 'userRoles', 'features'];
@@ -199,19 +205,19 @@ Respond with only the JSON object, no other text.`;
     }
 
     if (typeof result.appName !== 'string' || result.appName.trim().length === 0) {
-      throw new AIServiceError('Invalid appName in LLM response', 500);
+      throw new AIServiceError('Invalid appName in Gemini response', 500);
     }
 
     if (!Array.isArray(result.entities) || result.entities.length === 0) {
-      throw new AIServiceError('Invalid entities in LLM response', 500);
+      throw new AIServiceError('Invalid entities in Gemini response', 500);
     }
 
     if (!Array.isArray(result.userRoles) || result.userRoles.length === 0) {
-      throw new AIServiceError('Invalid userRoles in LLM response', 500);
+      throw new AIServiceError('Invalid userRoles in Gemini response', 500);
     }
 
     if (!Array.isArray(result.features) || result.features.length === 0) {
-      throw new AIServiceError('Invalid features in LLM response', 500);
+      throw new AIServiceError('Invalid features in Gemini response', 500);
     }
   }
 }

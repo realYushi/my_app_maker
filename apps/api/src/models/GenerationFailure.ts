@@ -22,7 +22,7 @@ const GenerationFailureSchema: Schema = new Schema({
   errorSource: {
     type: String,
     required: true,
-    enum: ['validation', 'llm_api', 'parsing', 'timeout', 'network', 'unknown']
+    enum: ['validation', 'gemini_api', 'parsing', 'timeout', 'network', 'unknown']
   },
   errorMessage: {
     type: String,

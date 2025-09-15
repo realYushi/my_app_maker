@@ -203,7 +203,7 @@ describe('ErrorLoggingService', () => {
         );
       });
 
-      it('should identify LLM API errors', async () => {
+      it('should identify Gemini API errors', async () => {
         mockDatabaseService.isConnectionReady.mockReturnValue(true);
         GenerationFailure.create.mockResolvedValueOnce({} as any);
 
@@ -214,7 +214,7 @@ describe('ErrorLoggingService', () => {
         });
 
         expect(GenerationFailure.create).toHaveBeenCalledWith(
-          expect.objectContaining({ errorSource: 'llm_api' })
+          expect.objectContaining({ errorSource: 'gemini_api' })
         );
       });
 
