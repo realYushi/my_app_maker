@@ -4,17 +4,26 @@ import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import { aiService, AIServiceError } from '../services/ai.service';
 
 // Mock the AI service
-jest.mock('../services/ai.service', () => ({
-  aiService: {
-    extractRequirements: jest.fn()
-  },
-  AIServiceError: jest.fn().mockImplementation((message, statusCode) => {
-    const error = new Error(message);
-    error.name = 'AIServiceError';
-    (error as any).statusCode = statusCode;
-    return error;
-  })
-}));
+jest.mock('../services/ai.service', () => {
+  class MockAIServiceError extends Error {
+    public statusCode: number;
+    public originalError?: Error;
+
+    constructor(message: string, statusCode: number = 500, originalError?: Error) {
+      super(message);
+      this.name = 'AIServiceError';
+      this.statusCode = statusCode;
+      this.originalError = originalError;
+    }
+  }
+
+  return {
+    aiService: {
+      extractRequirements: jest.fn()
+    },
+    AIServiceError: MockAIServiceError
+  };
+});
 
 // Mock the database service to prevent actual connections during tests
 jest.mock('../services/database.service', () => ({
@@ -29,6 +38,7 @@ const mockAIService = aiService as jest.Mocked<typeof aiService>;
 describe('POST /api/generate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   const mockGenerationResult: GenerationResult = {
@@ -62,10 +72,10 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: '  Build a task app  ' })
+        .send({ text: '  Build a comprehensive task management application with user authentication, project organization, task tracking, and team collaboration features  ' })
         .expect(200);
 
-      expect(mockAIService.extractRequirements).toHaveBeenCalledWith('Build a task app');
+      expect(mockAIService.extractRequirements).toHaveBeenCalledWith('Build a comprehensive task management application with user authentication, project organization, task tracking, and team collaboration features');
     });
   });
 
@@ -142,6 +152,70 @@ describe('POST /api/generate', () => {
         message: 'Text input is too long (maximum 10,000 characters)'
       });
     });
+
+    it('should return 400 for simple prompts with helpful guidance', async () => {
+      const simplePrompts = [
+        'i wanna design a pet shop',
+        'make an online store',
+        'create user management',
+        'build admin panel'
+      ];
+
+      for (const prompt of simplePrompts) {
+        const response = await request(app)
+          .post('/api/generate')
+          .send({ text: prompt })
+          .expect(400);
+
+        expect(response.body).toEqual({
+          error: 'Insufficient Details',
+          message: expect.stringContaining('Your description needs more specific details')
+        });
+      }
+    });
+
+    it('should accept detailed prompts', async () => {
+      mockAIService.extractRequirements.mockResolvedValueOnce(mockGenerationResult);
+
+      const response = await request(app)
+        .post('/api/generate')
+        .send({ text: 'Create a comprehensive pet shop management system with inventory tracking, customer appointment scheduling, pet profile management, online booking for grooming services, and integrated customer communication tools' })
+        .expect(200);
+
+      expect(response.body).toEqual(mockGenerationResult);
+    });
+
+    it('should provide context-specific error messages for restaurants', async () => {
+      const response = await request(app)
+        .post('/api/generate')
+        .send({ text: 'help me make a restaurant app' })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: 'Insufficient Details',
+        message: expect.stringContaining('restaurant features')
+      });
+
+      expect(response.body.message).toContain('menu management');
+      expect(response.body.message).toContain('customers, waitstaff, kitchen staff');
+      expect(response.body.message).toContain('restaurant management system');
+    });
+
+    it('should provide context-specific error messages for e-commerce', async () => {
+      const response = await request(app)
+        .post('/api/generate')
+        .send({ text: 'make an online store' })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: 'Insufficient Details',
+        message: expect.stringContaining('e-commerce features')
+      });
+
+      expect(response.body.message).toContain('product catalog');
+      expect(response.body.message).toContain('customers, sellers, administrators');
+      expect(response.body.message).toContain('e-commerce platform');
+    });
   });
 
   describe('AI service error handling', () => {
@@ -151,7 +225,7 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: 'Build an app' })
+        .send({ text: 'Create a comprehensive enterprise management system with advanced workflow automation and detailed user role permissions. The system should include integrated communication tools, extensive reporting capabilities, document management features, approval workflows, and multi-tenant architecture for large organizations with complex business requirements.' })
         .expect(400);
 
       expect(response.body).toEqual({
@@ -166,7 +240,7 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: 'Build an app' })
+        .send({ text: 'Build a comprehensive enterprise application with advanced user management features, complex business workflows, automated task processing, integrated reporting systems, notification management, audit logging, and role-based access control for multiple departments and user roles.' })
         .expect(500);
 
       expect(response.body).toEqual({
@@ -181,7 +255,7 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: 'Build an app' })
+        .send({ text: 'Build a comprehensive e-commerce platform with advanced inventory management features, customer relationship tools, payment processing integration, order tracking capabilities, product catalog management, customer support features, and analytics dashboard for business intelligence and reporting.' })
         .expect(504);
 
       expect(response.body).toEqual({
@@ -195,7 +269,7 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: 'Build an app' })
+        .send({ text: 'Build a comprehensive user management system with role-based access control features, profile management capabilities, audit logging functionality, permission management tools, user onboarding workflows, password policies, and administrative oversight features for enterprise organizations.' })
         .expect(500);
 
       expect(response.body).toEqual({
@@ -211,7 +285,7 @@ describe('POST /api/generate', () => {
 
       const response = await request(app)
         .post('/api/generate')
-        .send({ text: 'Build a user system' })
+        .send({ text: 'Build a comprehensive user management system with authentication features, role-based permissions management, user profile editing capabilities, administrative oversight tools, audit logging functionality, password policy enforcement, user onboarding workflows, and dashboard analytics for monitoring user activity and system usage.' })
         .expect(200);
 
       const result: GenerationResult = response.body;

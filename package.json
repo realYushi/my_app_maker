@@ -12,9 +12,13 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "turbo": "^2.0.0"
   },
   "engines": {

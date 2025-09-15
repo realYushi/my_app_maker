@@ -59,7 +59,7 @@ class GenerationService {
 
           // Try to get error message from response
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Request failed with status: ${response.status}`);
+          throw new Error(errorData.message || errorData.error || `Request failed with status: ${response.status}`);
         }
 
         return await response.json();
