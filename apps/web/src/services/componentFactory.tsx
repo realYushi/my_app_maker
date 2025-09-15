@@ -2,6 +2,11 @@ import React from 'react'
 import type { Entity } from '@mini-ai-app-builder/shared-types'
 import { DomainContext, type ContextDetectionResult } from './contextDetectionService'
 import EntityForm from '../features/generation/EntityForm'
+import {
+  EcommerceProductDisplay,
+  EcommerceCartDisplay,
+  EcommerceCheckoutDisplay
+} from '../features/generation/ecommerce'
 
 // Component factory interface
 export interface DomainComponent {
@@ -24,25 +29,7 @@ interface ComponentRegistry {
   }
 }
 
-// E-commerce specific components
-const EcommerceProductForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-        🛍️ Product Catalog
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      Product management interface for inventory and catalog operations.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
+// E-commerce specific components (keeping existing order and customer forms for backward compatibility)
 const EcommerceOrderForm: DomainComponent = ({ entity }) => (
   <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-green-500">
     <div className="flex items-center justify-between mb-4">
@@ -156,17 +143,22 @@ const AdminReportForm: DomainComponent = ({ entity }) => (
 class ComponentFactory {
   private registry: ComponentRegistry = {
     [DomainContext.ECOMMERCE]: {
-      'product': EcommerceProductForm,
-      'products': EcommerceProductForm,
-      'item': EcommerceProductForm,
-      'items': EcommerceProductForm,
-      'catalog': EcommerceProductForm,
-      'inventory': EcommerceProductForm,
+      // New enhanced e-commerce components
+      'product': EcommerceProductDisplay,
+      'products': EcommerceProductDisplay,
+      'item': EcommerceProductDisplay,
+      'items': EcommerceProductDisplay,
+      'catalog': EcommerceProductDisplay,
+      'inventory': EcommerceProductDisplay,
+      'cart': EcommerceCartDisplay,
+      'basket': EcommerceCartDisplay,
+      'shopping_cart': EcommerceCartDisplay,
       'order': EcommerceOrderForm,
       'orders': EcommerceOrderForm,
       'purchase': EcommerceOrderForm,
-      'cart': EcommerceOrderForm,
-      'basket': EcommerceOrderForm,
+      'checkout': EcommerceCheckoutDisplay,
+      'payment': EcommerceCheckoutDisplay,
+      'billing': EcommerceCheckoutDisplay,
       'customer': EcommerceCustomerForm,
       'customers': EcommerceCustomerForm,
       'client': EcommerceCustomerForm,
@@ -256,6 +248,26 @@ class ComponentFactory {
       this.registry[domain] = {}
     }
     this.registry[domain][entityType.toLowerCase()] = component
+  }
+
+  /**
+   * Gets the total number of registered components across all domains
+   */
+  getTotalRegisteredComponents(): number {
+    return Object.values(this.registry).reduce((total, domainRegistry) => {
+      return total + Object.keys(domainRegistry).length
+    }, 0)
+  }
+
+  /**
+   * Checks if the enhanced e-commerce components are properly registered
+   */
+  verifyEcommerceComponentsRegistered(): boolean {
+    const ecommerceRegistry = this.registry[DomainContext.ECOMMERCE]
+    if (!ecommerceRegistry) return false
+
+    const requiredComponents = ['product', 'cart', 'checkout']
+    return requiredComponents.every(component => component in ecommerceRegistry)
   }
 }
 

@@ -19,8 +19,8 @@ describe('ComponentFactory', () => {
       const { container } = render(component({ entity: entities[0] }))
 
       expect(container.querySelector('.border-l-blue-500')).toBeInTheDocument()
-      expect(screen.getByText('🛍️ Product Catalog')).toBeInTheDocument()
-      expect(screen.getByText('Product management interface for inventory and catalog operations.')).toBeInTheDocument()
+      expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
+      expect(screen.getByText('Enhanced product display with pricing, ratings, and add-to-cart functionality.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
 

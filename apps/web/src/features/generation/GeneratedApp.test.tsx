@@ -77,7 +77,9 @@ describe('GeneratedApp', () => {
       renderGeneratedApp()
       expect(screen.getByText('Data Management')).toBeInTheDocument()
       expect(screen.getByTestId('entity-form-User')).toBeInTheDocument()
-      expect(screen.getByTestId('entity-form-Product')).toBeInTheDocument()
+      // Product entity now uses enhanced e-commerce component, so check for that instead
+      expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
+      expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
     })
 
     it('renders features section when features exist', () => {
@@ -299,8 +301,9 @@ describe('GeneratedApp', () => {
 
       renderGeneratedApp(ecommerceResult)
 
-      // The entity should be rendered (component factory is mocked through EntityForm mock)
-      expect(screen.getByTestId('entity-form-Product')).toBeInTheDocument()
+      // The entity should be rendered via component factory (Product gets enhanced e-commerce component)
+      expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
+      expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
     })
 
     it('maintains unique keys for entity components', () => {
@@ -316,9 +319,9 @@ describe('GeneratedApp', () => {
 
       renderGeneratedApp(resultWithDuplicates)
 
-      // Both entities should be rendered with unique keys
-      const entityForms = screen.getAllByTestId(/entity-form-Product/)
-      expect(entityForms).toHaveLength(2)
+      // Both Product entities should be rendered (will show as enhanced e-commerce components)
+      const productElements = screen.getAllByText('🛒 Add to Cart')
+      expect(productElements).toHaveLength(2)
     })
   })
 
