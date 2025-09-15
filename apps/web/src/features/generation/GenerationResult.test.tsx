@@ -1,20 +1,20 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import GenerationResult from './GenerationResult'
-import { AppProvider, useAppContext } from '../../contexts/AppContext'
-import { GenerationResult as GenerationResultType } from '../../types'
+import type { GenerationResult as GenerationResultType } from '@mini-ai-app-builder/shared-types'
 
 // Mock the context to control state
 const mockContextValue = {
-  status: 'idle' as const,
+  status: 'idle' as 'idle' | 'loading' | 'success' | 'error',
   userInput: '',
-  generationResult: null,
-  error: null,
+  generationResult: null as GenerationResultType | null,
+  error: null as string | null,
   setUserInput: vi.fn(),
   setLoading: vi.fn(),
   setSuccess: vi.fn(),
   setError: vi.fn(),
-  reset: vi.fn()
+  reset: vi.fn(),
+  generateApp: vi.fn()
 }
 
 vi.mock('../../contexts/AppContext', async () => {

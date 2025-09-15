@@ -1,15 +1,12 @@
-import { useEffect } from 'react'
 import { useAppContext } from '../../contexts/AppContext'
-import { generationService } from '../../services/generationService'
 
 const GenerationForm = () => {
   const {
     status,
     userInput,
     setUserInput,
-    setLoading,
-    setSuccess,
-    setError
+    setError,
+    generateApp
   } = useAppContext()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,13 +20,12 @@ const GenerationForm = () => {
       return
     }
 
-    setLoading()
-    try {
-      const result = await generationService.generateApp(trimmedInput)
-      setSuccess(result)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
+    // Prevent duplicate submissions while loading
+    if (status === 'loading') {
+      return
     }
+
+    await generateApp(trimmedInput)
   }
 
   return (

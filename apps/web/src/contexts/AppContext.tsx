@@ -1,7 +1,8 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react'
-import type { GenerationResult } from '../types'
+import { createContext, useContext, useReducer, type ReactNode } from 'react'
+import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
+import { generationService } from '../services/generationService'
 
-export type AppState = 'idle' | 'loading' | 'success' | 'error'
+type AppState = 'idle' | 'loading' | 'success' | 'error'
 
 interface AppContextState {
   status: AppState
@@ -16,6 +17,7 @@ interface AppContextActions {
   setSuccess: (result: GenerationResult) => void
   setError: (error: string) => void
   reset: () => void
+  generateApp: (description: string) => Promise<void>
 }
 
 type AppContextValue = AppContextState & AppContextActions
@@ -83,7 +85,17 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     setLoading: () => dispatch({ type: 'SET_LOADING' }),
     setSuccess: (result: GenerationResult) => dispatch({ type: 'SET_SUCCESS', payload: result }),
     setError: (error: string) => dispatch({ type: 'SET_ERROR', payload: error }),
-    reset: () => dispatch({ type: 'RESET' })
+    reset: () => dispatch({ type: 'RESET' }),
+    generateApp: async (description: string) => {
+      try {
+        dispatch({ type: 'SET_LOADING' });
+        const result = await generationService.generateApp(description);
+        dispatch({ type: 'SET_SUCCESS', payload: result });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      }
+    }
   }
 
   const value: AppContextValue = {
@@ -94,6 +106,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = () => {
   const context = useContext(AppContext)
   if (context === undefined) {

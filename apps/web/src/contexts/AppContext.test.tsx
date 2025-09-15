@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { AppProvider, useAppContext } from './AppContext'
-import { GenerationResult } from '../types'
+import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
 
 // Test component that uses the context
 const TestComponent = () => {
