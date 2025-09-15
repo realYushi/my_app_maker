@@ -1,22 +1,27 @@
-# Tech Stack
+# High Level Architecture
 
-This table is the definitive source of truth for all technologies used in the project.
+## Technical Summary
 
-| Category               | Technology              | Version         | Purpose                                          | Rationale                                                                                                  |
-| :--------------------- | :---------------------- | :-------------- | :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
-| **Frontend Language**    | TypeScript              | `~5.x`          | Language for frontend development                | Provides type safety and aligns with modern React standards.                                               |
-| **Frontend Framework**   | React                   | `~18.x`         | Core UI library for building the SPA             | Required by the PRD (NFR5).                                                                                |
-| **UI Component Library** | Tailwind CSS + Headless UI | `~3.x` / `~2.x` | Styling and accessible unstyled components       | Required by `front-end-spec.md`. Provides accessible blocks without imposing a visual style.                |
-| **State Management**     | React Context API       | `~18.x`         | Managing simple global UI state                  | Sufficient for the MVP's limited state needs without adding external library overhead.                     |
-| **Backend Language**     | TypeScript              | `~5.x`          | Language for backend development                 | Enables code and type sharing with the frontend.                                                           |
-| **Backend Framework**    | Express.js              | `~4.x`          | Web server framework for the Node.js API         | Minimal, unopinionated, and widely used.                                                                   |
-| **API Style**            | REST                    | `N/A`           | Defines frontend-backend communication           | Simple and sufficient for the single endpoint required by the MVP.                                         |
-| **Database**             | MongoDB                 | `~7.x`          | Primary data store                               | Required by the PRD (NFR5).                                                                                |
-| **Authentication**       | `N/A`                   | `N/A`           | User authentication and authorization            | Explicitly out of scope for the MVP (PRD, NFR4).                                                           |
-| **Frontend Testing**     | Vitest                  | `~1.x`          | Unit and component testing for the frontend      | Native to the Vite ecosystem, offering high speed.                                                         |
-| **Backend Testing**      | Jest                    | `~29.x`         | Unit and integration testing for the backend API | A mature and widely adopted testing framework for Node.js.                                                 |
-| **E2E Testing**          | `N/A`                   | `N/A`           | End-to-end testing of user flows                 | Deferred for post-MVP.                                                                                     |
-| **Build Tool**           | Vite                    | `~5.x`          | Bundler and dev server for the React frontend    | Provides an extremely fast development experience.                                                         |
-| **Monorepo Tool**        | Turborepo               | `~2.x`          | Monorepo task runner and build orchestrator      | Provides high-performance task running and caching.                                                        |
-| **CI/CD**                | Render                  | `N/A`           | Automated builds and deployments                 | Render's native Git integration will be used.                                                              |
-| **Monitoring**           | Render                  | `N/A`           | Application health and performance monitoring    | Render provides sufficient built-in metrics and logging for the MVP.                                       |
+The Mini AI App Builder is a **full-stack TypeScript monorepo** that transforms user text descriptions into structured app requirements and generates mock UIs. Built for rapid prototyping and AI-assisted development.
+
+## Actual Tech Stack (from package.json analysis)
+
+| Category              | Technology       | Version  | Notes                                    |
+| --------------------- | ---------------- | -------- | ---------------------------------------- |
+| **Runtime**           | Node.js          | >=18.0.0 | Required for both API and build tools   |
+| **Package Manager**   | npm              | 10.0.0   | Workspace-enabled monorepo               |
+| **Build Orchestrator** | Turbo           | ^2.0.0   | Handles monorepo builds and dev servers |
+| **Backend Framework** | Express          | ~4.18.0  | REST API with TypeScript                |
+| **Frontend Framework** | React           | ^18.2.0  | With TypeScript and modern hooks        |
+| **Build Tool**        | Vite             | ^7.1.2   | Fast development and production builds  |
+| **Styling**           | Tailwind CSS     | ^3.4.0   | Utility-first CSS with Headless UI     |
+| **AI Integration**    | Google Gemini    | REST API | Direct HTTP calls, no SDK               |
+| **Testing**           | Jest + Vitest    | Latest   | Jest for API, Vitest for frontend       |
+| **E2E Testing**       | Playwright MCP   | Available| Browser automation via MCP integration  |
+| **Database**          | **DISABLED**     | N/A      | MongoDB ready but not active in Epic 1 |
+
+## Repository Structure Reality Check
+
+- **Type**: Monorepo with npm workspaces
+- **Package Manager**: npm with workspace configuration
+- **Architecture**: Clean separation of concerns with shared types
