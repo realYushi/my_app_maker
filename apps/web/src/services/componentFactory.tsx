@@ -7,6 +7,14 @@ import {
   EcommerceCartDisplay,
   EcommerceCheckoutDisplay
 } from '../features/generation/ecommerce'
+import {
+  UserManagementDisplay,
+  UserRoleDisplay
+} from '../features/generation/user-management'
+import {
+  AdminSystemDisplay,
+  AdminReportDisplay
+} from '../features/generation/admin'
 
 // Component factory interface
 export interface DomainComponent {
@@ -166,39 +174,59 @@ class ComponentFactory {
       'shopper': EcommerceCustomerForm,
     },
     [DomainContext.USER_MANAGEMENT]: {
-      'user': UserManagementUserForm,
-      'users': UserManagementUserForm,
-      'account': UserManagementUserForm,
-      'accounts': UserManagementUserForm,
-      'member': UserManagementUserForm,
-      'members': UserManagementUserForm,
-      'profile': UserManagementUserForm,
-      'profiles': UserManagementUserForm,
-      'role': UserManagementRoleForm,
-      'roles': UserManagementRoleForm,
-      'permission': UserManagementRoleForm,
-      'permissions': UserManagementRoleForm,
-      'group': UserManagementRoleForm,
-      'groups': UserManagementRoleForm,
-      'team': UserManagementRoleForm,
-      'teams': UserManagementRoleForm,
+      // Enhanced user management components
+      'user': UserManagementDisplay,
+      'users': UserManagementDisplay,
+      'account': UserManagementDisplay,
+      'accounts': UserManagementDisplay,
+      'member': UserManagementDisplay,
+      'members': UserManagementDisplay,
+      'profile': UserManagementDisplay,
+      'profiles': UserManagementDisplay,
+      'directory': UserManagementDisplay,
+      'table': UserManagementDisplay,
+      'list': UserManagementDisplay,
+      'activity': UserManagementDisplay,
+      'feed': UserManagementDisplay,
+      'role': UserRoleDisplay,
+      'roles': UserRoleDisplay,
+      'permission': UserRoleDisplay,
+      'permissions': UserRoleDisplay,
+      'group': UserRoleDisplay,
+      'groups': UserRoleDisplay,
+      'team': UserRoleDisplay,
+      'teams': UserRoleDisplay,
+      // Keep backward compatibility with old form components
+      'user_form': UserManagementUserForm,
+      'role_form': UserManagementRoleForm,
     },
     [DomainContext.ADMIN]: {
-      'admin': AdminSystemForm,
-      'administrator': AdminSystemForm,
-      'system': AdminSystemForm,
-      'configuration': AdminSystemForm,
-      'config': AdminSystemForm,
-      'settings': AdminSystemForm,
-      'log': AdminReportForm,
-      'logs': AdminReportForm,
-      'report': AdminReportForm,
-      'reports': AdminReportForm,
-      'analytics': AdminReportForm,
-      'dashboard': AdminReportForm,
-      'metric': AdminReportForm,
-      'monitor': AdminSystemForm,
-      'monitoring': AdminSystemForm,
+      // Enhanced admin components
+      'admin': AdminSystemDisplay,
+      'administrator': AdminSystemDisplay,
+      'system': AdminSystemDisplay,
+      'configuration': AdminSystemDisplay,
+      'config': AdminSystemDisplay,
+      'settings': AdminSystemDisplay,
+      'control': AdminSystemDisplay,
+      'panel': AdminSystemDisplay,
+      'dashboard': AdminSystemDisplay,
+      'overview': AdminSystemDisplay,
+      'metrics': AdminSystemDisplay,
+      'monitoring': AdminSystemDisplay,
+      'health': AdminSystemDisplay,
+      'log': AdminReportDisplay,
+      'logs': AdminReportDisplay,
+      'report': AdminReportDisplay,
+      'reports': AdminReportDisplay,
+      'analytics': AdminReportDisplay,
+      'chart': AdminReportDisplay,
+      'visualization': AdminReportDisplay,
+      'data': AdminReportDisplay,
+      // Keep backward compatibility with old form components
+      'admin_form': AdminSystemForm,
+      'report_form': AdminReportForm,
+      'monitor': AdminSystemDisplay,
     },
     [DomainContext.GENERIC]: {}
   }
@@ -268,6 +296,37 @@ class ComponentFactory {
 
     const requiredComponents = ['product', 'cart', 'checkout']
     return requiredComponents.every(component => component in ecommerceRegistry)
+  }
+
+  /**
+   * Checks if the enhanced user management components are properly registered
+   */
+  verifyUserManagementComponentsRegistered(): boolean {
+    const userMgmtRegistry = this.registry[DomainContext.USER_MANAGEMENT]
+    if (!userMgmtRegistry) return false
+
+    const requiredComponents = ['user', 'role', 'profile', 'activity']
+    return requiredComponents.every(component => component in userMgmtRegistry)
+  }
+
+  /**
+   * Checks if the enhanced admin components are properly registered
+   */
+  verifyAdminComponentsRegistered(): boolean {
+    const adminRegistry = this.registry[DomainContext.ADMIN]
+    if (!adminRegistry) return false
+
+    const requiredComponents = ['admin', 'dashboard', 'analytics', 'system']
+    return requiredComponents.every(component => component in adminRegistry)
+  }
+
+  /**
+   * Verifies all enhanced components across all domains are properly registered
+   */
+  verifyAllEnhancedComponentsRegistered(): boolean {
+    return this.verifyEcommerceComponentsRegistered() &&
+           this.verifyUserManagementComponentsRegistered() &&
+           this.verifyAdminComponentsRegistered()
   }
 }
 

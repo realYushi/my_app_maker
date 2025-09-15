@@ -84,7 +84,7 @@ describe('ComponentFactory', () => {
       const { container } = render(component({ entity: entities[0] }))
 
       expect(container.querySelector('.border-l-indigo-500')).toBeInTheDocument()
-      expect(screen.getByText('👤 User Account')).toBeInTheDocument()
+      expect(screen.getByText('👤 User Management')).toBeInTheDocument()
       expect(screen.getByText('User account management with authentication and profile settings.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
@@ -100,8 +100,8 @@ describe('ComponentFactory', () => {
       const { container } = render(component({ entity: entities[0] }))
 
       expect(container.querySelector('.border-l-yellow-500')).toBeInTheDocument()
-      expect(screen.getByText('🔐 Access Control')).toBeInTheDocument()
-      expect(screen.getByText('Role-based access control and permission management interface.')).toBeInTheDocument()
+      expect(screen.getAllByText('🔐 Access Control')[0]).toBeInTheDocument()
+      expect(screen.getByText('Role-based access control and permission management interface with matrix-style configuration.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
 
@@ -133,7 +133,7 @@ describe('ComponentFactory', () => {
       const { container } = render(component({ entity: entities[0] }))
 
       expect(container.querySelector('.border-l-red-500')).toBeInTheDocument()
-      expect(screen.getByText('⚙️ System Admin')).toBeInTheDocument()
+      expect(screen.getAllByText('⚙️ System Admin')[0]).toBeInTheDocument()
       expect(screen.getByText('System administration and configuration management interface.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
@@ -148,9 +148,9 @@ describe('ComponentFactory', () => {
 
       const { container } = render(component({ entity: entities[0] }))
 
-      expect(container.querySelector('.border-l-orange-500')).toBeInTheDocument()
-      expect(screen.getByText('📊 Analytics & Reports')).toBeInTheDocument()
-      expect(screen.getByText('Analytics dashboard and reporting interface for data insights.')).toBeInTheDocument()
+      expect(container.querySelector('.border-l-indigo-500')).toBeInTheDocument()
+      expect(screen.getAllByText('📊 Analytics & Reports')[0]).toBeInTheDocument()
+      expect(screen.getByText('Advanced analytics dashboard with interactive charts, data visualization, and comprehensive reporting capabilities.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
 

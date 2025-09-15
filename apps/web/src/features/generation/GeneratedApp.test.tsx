@@ -76,7 +76,8 @@ describe('GeneratedApp', () => {
     it('renders entity forms when entities exist', () => {
       renderGeneratedApp()
       expect(screen.getByText('Data Management')).toBeInTheDocument()
-      expect(screen.getByTestId('entity-form-User')).toBeInTheDocument()
+      // User entity now uses enhanced user management component
+      expect(screen.getByText('👤 User Management')).toBeInTheDocument()
       // Product entity now uses enhanced e-commerce component, so check for that instead
       expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
       expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
