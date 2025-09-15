@@ -13,9 +13,11 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.8",
+    "@heroicons/react": "^2.2.0",
+    "@mini-ai-app-builder/shared-types": "file:../../packages/shared-types",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@mini-ai-app-builder/shared-types": "file:../../packages/shared-types"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

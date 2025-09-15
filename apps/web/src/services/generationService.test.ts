@@ -70,7 +70,7 @@ describe('GenerationService', () => {
       expect(generationService).toHaveProperty('generateApp')
 
       // Access private constants through the instance to verify they exist
-      const serviceInstance = generationService as any
+      const serviceInstance = generationService as unknown as Record<string, unknown>
       expect(serviceInstance.REQUEST_TIMEOUT).toBe(30000)
       expect(serviceInstance.MAX_RETRIES).toBe(3)
       expect(serviceInstance.RETRY_DELAY).toBe(1000)

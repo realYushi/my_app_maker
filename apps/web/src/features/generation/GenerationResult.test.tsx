@@ -1,7 +1,24 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import GenerationResult from './GenerationResult'
 import type { GenerationResult as GenerationResultType } from '@mini-ai-app-builder/shared-types'
+
+// Mock the child components
+vi.mock('./GeneratedApp', () => ({
+  default: ({ generationResult }: { generationResult: GenerationResultType }) => (
+    <div data-testid="generated-app">
+      Generated App for {generationResult.appName}
+    </div>
+  )
+}))
+
+vi.mock('./ErrorDisplay', () => ({
+  default: () => (
+    <div data-testid="error-display">
+      Error Display Component
+    </div>
+  )
+}))
 
 // Mock the context to control state
 const mockContextValue = {
@@ -66,19 +83,8 @@ describe('GenerationResult', () => {
 
     render(<GenerationResult />)
 
-    expect(screen.getByText('Generation Failed')).toBeInTheDocument()
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument()
-    expect(screen.getByText('Try again')).toBeInTheDocument()
-  })
-
-  it('calls reset when try again is clicked', () => {
-    mockContextValue.status = 'error'
-    mockContextValue.error = 'Something went wrong'
-
-    render(<GenerationResult />)
-
-    fireEvent.click(screen.getByText('Try again'))
-    expect(mockContextValue.reset).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('error-display')).toBeInTheDocument()
+    expect(screen.getByText('Error Display Component')).toBeInTheDocument()
   })
 
   it('renders success state with generation result', () => {
@@ -87,60 +93,21 @@ describe('GenerationResult', () => {
 
     render(<GenerationResult />)
 
-    expect(screen.getByText('Generated App Structure')).toBeInTheDocument()
-    expect(screen.getByText('Task Manager App')).toBeInTheDocument()
-    expect(screen.getByText('Generate New App')).toBeInTheDocument()
+    expect(screen.getByTestId('generated-app')).toBeInTheDocument()
+    expect(screen.getByText('Generated App for Task Manager App')).toBeInTheDocument()
   })
 
-  it('renders entities section correctly', () => {
+  it('passes correct generationResult to GeneratedApp', () => {
     mockContextValue.status = 'success'
     mockContextValue.generationResult = mockGenerationResult
 
     render(<GenerationResult />)
 
-    expect(screen.getByText('Entities')).toBeInTheDocument()
-    expect(screen.getByText('Task')).toBeInTheDocument()
-    expect(screen.getAllByText('User')).toHaveLength(2) // One in entities, one in user roles
-    expect(screen.getAllByText('id')).toHaveLength(2) // One for Task, one for User entity
-    expect(screen.getByText('title')).toBeInTheDocument()
-    expect(screen.getByText('email')).toBeInTheDocument()
+    expect(screen.getByTestId('generated-app')).toBeInTheDocument()
+    expect(screen.getByText('Generated App for Task Manager App')).toBeInTheDocument()
   })
 
-  it('renders user roles section correctly', () => {
-    mockContextValue.status = 'success'
-    mockContextValue.generationResult = mockGenerationResult
-
-    render(<GenerationResult />)
-
-    expect(screen.getByText('User Roles')).toBeInTheDocument()
-    expect(screen.getByText('Admin')).toBeInTheDocument()
-    expect(screen.getByText('Can manage all tasks and users')).toBeInTheDocument()
-    expect(screen.getByText('Can manage own tasks')).toBeInTheDocument()
-  })
-
-  it('renders features section correctly', () => {
-    mockContextValue.status = 'success'
-    mockContextValue.generationResult = mockGenerationResult
-
-    render(<GenerationResult />)
-
-    expect(screen.getByText('Features')).toBeInTheDocument()
-    expect(screen.getByText('Task Creation')).toBeInTheDocument()
-    expect(screen.getByText('Users can create and edit tasks')).toBeInTheDocument()
-    expect(screen.getByText('Due Date Tracking')).toBeInTheDocument()
-  })
-
-  it('calls reset when Generate New App is clicked', () => {
-    mockContextValue.status = 'success'
-    mockContextValue.generationResult = mockGenerationResult
-
-    render(<GenerationResult />)
-
-    fireEvent.click(screen.getByText('Generate New App'))
-    expect(mockContextValue.reset).toHaveBeenCalledTimes(1)
-  })
-
-  it('handles empty arrays in generation result', () => {
+  it('handles empty generation result', () => {
     mockContextValue.status = 'success'
     mockContextValue.generationResult = {
       appName: 'Empty App',
@@ -151,10 +118,7 @@ describe('GenerationResult', () => {
 
     render(<GenerationResult />)
 
-    expect(screen.getByText('Generated App Structure')).toBeInTheDocument()
-    expect(screen.getByText('Empty App')).toBeInTheDocument()
-    expect(screen.queryByText('Entities')).not.toBeInTheDocument()
-    expect(screen.queryByText('User Roles')).not.toBeInTheDocument()
-    expect(screen.queryByText('Features')).not.toBeInTheDocument()
+    expect(screen.getByTestId('generated-app')).toBeInTheDocument()
+    expect(screen.getByText('Generated App for Empty App')).toBeInTheDocument()
   })
 })
