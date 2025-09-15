@@ -2,7 +2,7 @@ import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
 import { configService } from '../config'
 
 interface GenerationRequest {
-  prompt: string
+  text: string
 }
 
 class GenerationService {
@@ -43,7 +43,7 @@ class GenerationService {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ prompt: description } as GenerationRequest)
+            body: JSON.stringify({ text: description } as GenerationRequest)
           },
           this.REQUEST_TIMEOUT
         );

@@ -41,7 +41,7 @@ describe('GenerationService', () => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ prompt: 'Test app description' }),
+          body: JSON.stringify({ text: 'Test app description' }),
           signal: expect.any(AbortSignal)
         }
       )

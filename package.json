@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Mini AI App Builder - Full Stack Application",
   "private": true,
+  "packageManager": "npm@10.0.0",
   "workspaces": [
     "apps/*",
     "packages/*"
