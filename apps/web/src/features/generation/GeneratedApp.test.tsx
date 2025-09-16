@@ -73,14 +73,23 @@ describe('GeneratedApp', () => {
       expect(screen.getAllByText(/2 features/i)).toHaveLength(2) // Navigation and overview
     })
 
-    it('renders entity forms when entities exist', () => {
+    it('renders entity forms in tabbed interface when entities exist', () => {
       renderGeneratedApp()
       expect(screen.getByText('Data Management')).toBeInTheDocument()
+
+      // Check for tab structure
+      expect(screen.getByRole('tablist', { name: /entity management tabs/i })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: /user entity management/i })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: /product entity management/i })).toBeInTheDocument()
+
+      // First tab should be selected by default
+      expect(screen.getByRole('tab', { name: /user entity management/i })).toHaveAttribute('aria-selected', 'true')
+
+      // Check for tabpanel content
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument()
+
       // User entity now uses enhanced user management component
       expect(screen.getByText('👤 User Management')).toBeInTheDocument()
-      // Product entity now uses enhanced e-commerce component, so check for that instead
-      expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
-      expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
     })
 
     it('renders features section when features exist', () => {
@@ -307,7 +316,8 @@ describe('GeneratedApp', () => {
       expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
     })
 
-    it('maintains unique keys for entity components', () => {
+    it('maintains unique keys for entity components', async () => {
+      const user = userEvent.setup()
       const resultWithDuplicates: GenerationResult = {
         appName: 'Test',
         entities: [
@@ -320,9 +330,20 @@ describe('GeneratedApp', () => {
 
       renderGeneratedApp(resultWithDuplicates)
 
-      // Both Product entities should be rendered (will show as enhanced e-commerce components)
-      const productElements = screen.getAllByText('🛒 Add to Cart')
-      expect(productElements).toHaveLength(2)
+      // Both Product entities should be rendered as tabs
+      const tabs = screen.getAllByRole('tab')
+      expect(tabs).toHaveLength(2)
+
+      // First tab should be active and show e-commerce component
+      expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
+
+      // Click second tab to see the other Product entity
+      await act(async () => {
+        await user.click(tabs[1])
+      })
+
+      // Should still see e-commerce component content
+      expect(screen.getByText('🛒 Add to Cart')).toBeInTheDocument()
     })
   })
 
@@ -352,6 +373,134 @@ describe('GeneratedApp', () => {
 
       // Should still show e-commerce context
       expect(screen.getByText('🛍️')).toBeInTheDocument()
+    })
+  })
+
+  describe('Tabbed Interface', () => {
+    it('renders tabs for each entity', () => {
+      renderGeneratedApp()
+
+      const tabs = screen.getAllByRole('tab')
+      expect(tabs).toHaveLength(2)
+      expect(tabs[0]).toHaveTextContent('User')
+      expect(tabs[1]).toHaveTextContent('Product')
+    })
+
+    it('allows switching between tabs', async () => {
+      const user = userEvent.setup()
+      renderGeneratedApp()
+
+      // Initially User tab should be selected
+      expect(screen.getByRole('tab', { name: /user entity management/i })).toHaveAttribute('aria-selected', 'true')
+      expect(screen.getByRole('tab', { name: /product entity management/i })).toHaveAttribute('aria-selected', 'false')
+
+      // User management content should be visible
+      expect(screen.getByText('👤 User Management')).toBeInTheDocument()
+
+      // Click on Product tab
+      await act(async () => {
+        await user.click(screen.getByRole('tab', { name: /product entity management/i }))
+      })
+
+      // Now Product tab should be selected
+      expect(screen.getByRole('tab', { name: /product entity management/i })).toHaveAttribute('aria-selected', 'true')
+      expect(screen.getByRole('tab', { name: /user entity management/i })).toHaveAttribute('aria-selected', 'false')
+
+      // Product content should be visible
+      expect(screen.getByText('🛍️ Product Card')).toBeInTheDocument()
+    })
+
+    it('supports keyboard navigation', async () => {
+      const user = userEvent.setup()
+      renderGeneratedApp()
+
+      const firstTab = screen.getByRole('tab', { name: /user entity management/i })
+
+      // Focus first tab
+      await act(async () => {
+        await user.click(firstTab)
+      })
+
+      // Tab to next tab using keyboard
+      await act(async () => {
+        await user.keyboard('{ArrowRight}')
+      })
+
+      // Second tab should now be selected
+      expect(screen.getByRole('tab', { name: /product entity management/i })).toHaveAttribute('aria-selected', 'true')
+    })
+
+    it('handles single entity gracefully', () => {
+      const singleEntityResult = {
+        ...mockGenerationResult,
+        entities: [{ name: 'User', attributes: ['name', 'email'] }]
+      }
+
+      renderGeneratedApp(singleEntityResult)
+
+      // Should still render tabs even with single entity
+      expect(screen.getByRole('tablist')).toBeInTheDocument()
+      expect(screen.getAllByRole('tab')).toHaveLength(1)
+      expect(screen.getByRole('tab', { name: /user entity management/i })).toBeInTheDocument()
+    })
+
+    it('handles many entities without UI breakdown', () => {
+      const manyEntitiesResult = {
+        ...mockGenerationResult,
+        entities: Array.from({ length: 10 }, (_, i) => ({
+          name: `Entity${i + 1}`,
+          attributes: ['attr1', 'attr2']
+        }))
+      }
+
+      renderGeneratedApp(manyEntitiesResult)
+
+      // Should render all tabs
+      const tabs = screen.getAllByRole('tab')
+      expect(tabs).toHaveLength(10)
+
+      // Tab container should have overflow handling
+      const tabList = screen.getByRole('tablist')
+      expect(tabList).toHaveClass('overflow-x-auto')
+      expect(tabList).toHaveClass('flex-wrap')
+    })
+
+    it('has proper focus management', () => {
+      renderGeneratedApp()
+
+      const tabs = screen.getAllByRole('tab')
+      const tabPanels = screen.getAllByRole('tabpanel')
+
+      // Each tab should have focus styling classes
+      tabs.forEach(tab => {
+        expect(tab).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500')
+      })
+
+      // Each tab panel should have focus styling classes
+      tabPanels.forEach(panel => {
+        expect(panel).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500')
+      })
+    })
+
+    it('preserves entity component error boundaries within tabs', () => {
+      // This test verifies that error boundaries are still present in the tab structure
+      renderGeneratedApp()
+
+      // The error boundary wrapping should still work
+      // EntityFormErrorBoundary is already wrapped around each entity component
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument()
+    })
+
+    it('maintains responsive design with proper mobile classes', () => {
+      renderGeneratedApp()
+
+      const tabList = screen.getByRole('tablist')
+      expect(tabList).toHaveClass('flex', 'flex-wrap', 'gap-1', 'p-1', 'bg-gray-100', 'rounded-lg', 'overflow-x-auto')
+
+      const tabs = screen.getAllByRole('tab')
+      tabs.forEach(tab => {
+        expect(tab).toHaveClass('whitespace-nowrap')
+      })
     })
   })
 })

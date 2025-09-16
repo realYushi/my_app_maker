@@ -1,4 +1,5 @@
 import { useMemo, memo, useCallback } from 'react'
+import { Tab } from '@headlessui/react'
 import { useAppContext } from '../../contexts/AppContext'
 import Navigation from './Navigation'
 import { contextDetectionService, DomainContext } from '../../services/contextDetectionService'
@@ -119,9 +120,38 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
         {generationResult.entities.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Data Management</h2>
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2">
-              {entityComponents}
-            </div>
+            <Tab.Group>
+              <Tab.List
+                className="flex flex-wrap gap-1 p-1 bg-gray-100 rounded-lg overflow-x-auto"
+                aria-label="Entity management tabs"
+              >
+                {generationResult.entities.map((entity, index) => (
+                  <Tab
+                    key={`tab-${entity.name}-${index}`}
+                    className={({ selected }) =>
+                      `px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        selected
+                          ? 'bg-white text-blue-700 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                      }`
+                    }
+                    aria-label={`${entity.name} entity management`}
+                  >
+                    {entity.name}
+                  </Tab>
+                ))}
+              </Tab.List>
+              <Tab.Panels className="mt-4">
+                {entityComponents.map((entityComponent, index) => (
+                  <Tab.Panel
+                    key={`panel-${generationResult.entities[index].name}-${index}`}
+                    className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
+                  >
+                    {entityComponent}
+                  </Tab.Panel>
+                ))}
+              </Tab.Panels>
+            </Tab.Group>
           </div>
         )}
 
