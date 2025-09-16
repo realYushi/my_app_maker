@@ -81,7 +81,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
           </div>
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 whitespace-nowrap"
+            className="px-4 py-2 text-sm font-medium bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 whitespace-nowrap min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             Generate New App
           </button>
@@ -122,14 +122,14 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Data Management</h2>
             <Tab.Group>
               <Tab.List
-                className="flex flex-wrap gap-1 p-1 bg-gray-100 rounded-lg overflow-x-auto"
+                className="flex flex-wrap gap-1 sm:gap-2 p-1 sm:p-2 bg-gray-100 rounded-lg overflow-x-auto"
                 aria-label="Entity management tabs"
               >
                 {generationResult.entities.map((entity, index) => (
                   <Tab
                     key={`tab-${entity.name}-${index}`}
                     className={({ selected }) =>
-                      `px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      `px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] flex items-center min-w-[44px] justify-center ${
                         selected
                           ? 'bg-white text-blue-700 shadow-sm'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
@@ -155,21 +155,60 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
           </div>
         )}
 
-        {/* Features Overview */}
+        {/* Features Overview with Responsive Grid */}
         {generationResult.features.length > 0 && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Available Features</h2>
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+
+            {/* Mobile-first responsive grid layout */}
+            <div className={`grid gap-4 sm:gap-6 md:gap-6 lg:gap-8 ${
+              generationResult.features.length === 1
+                ? 'grid-cols-1'
+                : generationResult.features.length === 2
+                  ? 'grid-cols-1 sm:grid-cols-2'
+                  : generationResult.features.length <= 4
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3'
+                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            }`}>
               {generationResult.features.map((feature, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                  <h3 className="font-medium text-gray-900 mb-2">{feature.name}</h3>
-                  <p className="text-sm text-gray-600 mb-3">{feature.description}</p>
-                  <button className="w-full sm:w-auto px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
-                    View Details
-                  </button>
+                <div
+                  key={index}
+                  className="group p-4 sm:p-5 border border-gray-200 rounded-lg hover:shadow-md hover:border-gray-300 transition-all duration-200 bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+                >
+                  <div className="flex flex-col h-full">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 mb-2 text-base sm:text-lg leading-tight">
+                        {feature.name}
+                      </h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+
+                    {/* Feature type indicator */}
+                    <div className="mb-4">
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                        Feature
+                      </span>
+                    </div>
+
+                    {/* Touch-friendly button */}
+                    <button className="w-full px-4 py-2 text-sm font-medium bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors min-h-[44px] group-hover:bg-blue-150">
+                      View Details
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
+
+            {/* Grid layout helper for many features */}
+            {generationResult.features.length > 6 && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-500">
+                  Showing all {generationResult.features.length} features in responsive grid layout
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
