@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo, useMemo, useCallback } from 'react'
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import type { UserRole, Feature } from '@mini-ai-app-builder/shared-types'
@@ -8,15 +8,19 @@ interface NavigationProps {
   features: Feature[]
 }
 
-const Navigation = ({ userRoles, features }: NavigationProps) => {
+const Navigation = memo(({ userRoles, features }: NavigationProps) => {
   const [activeTab, setActiveTab] = useState<string>('overview')
 
-  // Combine navigation items from roles and features
-  const navigationItems = [
+  // Memoize navigation items to prevent recalculation
+  const navigationItems = useMemo(() => [
     { id: 'overview', name: 'Overview', type: 'default' },
     ...userRoles.map(role => ({ id: `role-${role.name}`, name: role.name, type: 'role' as const })),
     ...features.map(feature => ({ id: `feature-${feature.name}`, name: feature.name, type: 'feature' as const }))
-  ]
+  ], [userRoles, features])
+
+  const handleTabClick = useCallback((tabId: string) => {
+    setActiveTab(tabId)
+  }, [])
 
   return (
     <Disclosure as="nav" className="bg-gray-50 border-b border-gray-200">
@@ -29,7 +33,7 @@ const Navigation = ({ userRoles, features }: NavigationProps) => {
                 {navigationItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => handleTabClick(item.id)}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       activeTab === item.id
                         ? 'bg-blue-100 text-blue-700'
@@ -90,7 +94,7 @@ const Navigation = ({ userRoles, features }: NavigationProps) => {
                 <Disclosure.Button
                   key={item.id}
                   as="button"
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleTabClick(item.id)}
                   className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     activeTab === item.id
                       ? 'bg-blue-100 text-blue-700'
@@ -126,6 +130,8 @@ const Navigation = ({ userRoles, features }: NavigationProps) => {
       )}
     </Disclosure>
   )
-}
+})
+
+Navigation.displayName = 'Navigation'
 
 export default Navigation

@@ -2,24 +2,20 @@ import { GenerationResult } from "@mini-ai-app-builder/shared-types";
 import { config } from "../config";
 import { errorLoggingService } from "./error-logging.service";
 
-export interface GeminiRequest {
-  contents: Array<{
-    parts: Array<{
-      text: string;
-    }>;
+export interface OpenRouterRequest {
+  model: string;
+  messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
   }>;
-  generationConfig?: {
-    temperature?: number;
-    maxOutputTokens?: number;
-  };
+  temperature?: number;
+  max_tokens?: number;
 }
 
-export interface GeminiResponse {
-  candidates: Array<{
-    content: {
-      parts: Array<{
-        text: string;
-      }>;
+export interface OpenRouterResponse {
+  choices: Array<{
+    message: {
+      content: string;
     };
   }>;
 }
@@ -44,7 +40,7 @@ export class AIService {
   constructor() {
     // For development/testing, allow mock mode when API key is not set
     if (!config.gemini.apiKey || config.gemini.apiKey === "test_key") {
-      console.warn("Running in mock mode - Gemini API key not configured");
+      console.warn("Running in mock mode - OpenRouter API key not configured");
       this.baseUrl = "";
       this.apiKey = "";
       this.model = "";
@@ -96,29 +92,34 @@ Respond with only the JSON object, no other text.`;
   }
 
   async extractRequirements(userText: string): Promise<GenerationResult> {
+    const startTime = Date.now();
+
     if (!userText || userText.trim().length === 0) {
       throw new AIServiceError("User text input is required", 400);
     }
 
     // Mock mode for testing
     if (!this.apiKey || this.apiKey === "test_key") {
-      return this.getMockResponse(userText);
+      const result = this.getMockResponse(userText);
+      const duration = Date.now() - startTime;
+      console.log(`AI Service (Mock) - Request completed in ${duration}ms`);
+      return result;
     }
 
-    const requestBody: GeminiRequest = {
-      contents: [
+    const requestBody: OpenRouterRequest = {
+      model: this.model,
+      messages: [
         {
-          parts: [
-            {
-              text: `${this.getExtractionPrompt()}\n\nUser Request: ${userText.trim()}`,
-            },
-          ],
+          role: 'system',
+          content: this.getExtractionPrompt()
         },
+        {
+          role: 'user',
+          content: userText.trim()
+        }
       ],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2000,
-      },
+      temperature: 0.3,
+      max_tokens: 2000,
     };
 
     let timeoutId: NodeJS.Timeout | undefined;
@@ -128,11 +129,12 @@ Respond with only the JSON object, no other text.`;
       timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
       const response = await fetch(
-        `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
+        this.baseUrl,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.apiKey}`,
           },
           body: JSON.stringify(requestBody),
           signal: controller.signal,
@@ -142,20 +144,20 @@ Respond with only the JSON object, no other text.`;
       if (!response.ok) {
         const errorText = await response.text();
         throw new AIServiceError(
-          `Gemini API error: ${response.status} ${response.statusText}`,
+          `OpenRouter API error: ${response.status} ${response.statusText}`,
           response.status
         );
       }
 
-      const data = (await response.json()) as GeminiResponse;
+      const data = (await response.json()) as OpenRouterResponse;
 
-      if (!data.candidates || data.candidates.length === 0) {
-        throw new AIServiceError("No response from Gemini API", 500);
+      if (!data.choices || data.choices.length === 0) {
+        throw new AIServiceError("No response from OpenRouter API", 500);
       }
 
-      const content = data.candidates[0].content.parts[0].text;
+      const content = data.choices[0].message.content;
       if (!content) {
-        throw new AIServiceError("Empty response from Gemini API", 500);
+        throw new AIServiceError("Empty response from OpenRouter API", 500);
       }
 
       // Parse the JSON response
@@ -164,7 +166,7 @@ Respond with only the JSON object, no other text.`;
         parsedResult = JSON.parse(content.trim());
       } catch (parseError) {
         throw new AIServiceError(
-          "Invalid JSON response from Gemini API",
+          "Invalid JSON response from OpenRouter API",
           500,
           parseError as Error
         );
@@ -172,6 +174,9 @@ Respond with only the JSON object, no other text.`;
 
       // Validate the structure
       this.validateGenerationResult(parsedResult);
+
+      const duration = Date.now() - startTime;
+      console.log(`AI Service - Request completed in ${duration}ms`);
 
       return parsedResult;
     } catch (error) {
@@ -188,10 +193,10 @@ Respond with only the JSON object, no other text.`;
 
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          throw new AIServiceError("Gemini API request timeout", 504, error);
+          throw new AIServiceError("OpenRouter API request timeout", 504, error);
         }
         throw new AIServiceError(
-          `Gemini API request failed: ${error.message}`,
+          `OpenRouter API request failed: ${error.message}`,
           500,
           error
         );
@@ -345,7 +350,7 @@ Respond with only the JSON object, no other text.`;
 
   private validateGenerationResult(result: any): void {
     if (!result || typeof result !== "object") {
-      throw new AIServiceError("Invalid response structure from Gemini", 500);
+      throw new AIServiceError("Invalid response structure from OpenRouter", 500);
     }
 
     const required = ["appName", "entities", "userRoles", "features"];
@@ -359,19 +364,19 @@ Respond with only the JSON object, no other text.`;
       typeof result.appName !== "string" ||
       result.appName.trim().length === 0
     ) {
-      throw new AIServiceError("Invalid appName in Gemini response", 500);
+      throw new AIServiceError("Invalid appName in OpenRouter response", 500);
     }
 
     if (!Array.isArray(result.entities) || result.entities.length === 0) {
-      throw new AIServiceError("Invalid entities in Gemini response", 500);
+      throw new AIServiceError("Invalid entities in OpenRouter response", 500);
     }
 
     if (!Array.isArray(result.userRoles) || result.userRoles.length === 0) {
-      throw new AIServiceError("Invalid userRoles in Gemini response", 500);
+      throw new AIServiceError("Invalid userRoles in OpenRouter response", 500);
     }
 
     if (!Array.isArray(result.features) || result.features.length === 0) {
-      throw new AIServiceError("Invalid features in Gemini response", 500);
+      throw new AIServiceError("Invalid features in OpenRouter response", 500);
     }
   }
 }

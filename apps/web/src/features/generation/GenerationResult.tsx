@@ -1,6 +1,7 @@
 import { useAppContext } from '../../contexts/AppContext'
 import GeneratedApp from './GeneratedApp'
 import ErrorDisplay from './ErrorDisplay'
+import { GenerationErrorBoundary } from '../../components'
 
 const GenerationResult = () => {
   const { status, generationResult } = useAppContext()
@@ -14,7 +15,11 @@ const GenerationResult = () => {
   }
 
   if (status === 'success' && generationResult) {
-    return <GeneratedApp generationResult={generationResult} />
+    return (
+      <GenerationErrorBoundary>
+        <GeneratedApp generationResult={generationResult} />
+      </GenerationErrorBoundary>
+    )
   }
 
   return null

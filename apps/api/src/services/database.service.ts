@@ -20,7 +20,8 @@ export class DatabaseService {
     }
 
     try {
-      await mongoose.connect(config.mongodb.uri, {
+      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/mini-ai-app-builder';
+      await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
       });

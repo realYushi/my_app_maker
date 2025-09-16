@@ -1,8 +1,22 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import { aiService, AIServiceError } from '../services/ai.service';
+import { config } from '../config';
 
 export const generateRouter = Router();
+
+// Rate limiting configuration
+const generateRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: config.nodeEnv === 'production' ? 10 : 100, // 10 req/min in prod, 100 in dev
+  message: {
+    error: 'Too Many Requests',
+    message: 'Too many generation requests, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 interface GenerateRequest extends Request {
   body: {
@@ -182,7 +196,9 @@ function isSimplePrompt(text: string): boolean {
   return false;
 }
 
-generateRouter.post('/generate', async (req: GenerateRequest, res: Response, next: NextFunction) => {
+generateRouter.post('/generate', generateRateLimit, async (req: GenerateRequest, res: Response, next: NextFunction) => {
+  const startTime = Date.now();
+
   try {
     // Validate request body
     if (!req.body || typeof req.body.text !== 'string') {
@@ -220,6 +236,9 @@ generateRouter.post('/generate', async (req: GenerateRequest, res: Response, nex
 
     // Extract requirements using AI service
     const result: GenerationResult = await aiService.extractRequirements(userText);
+
+    const duration = Date.now() - startTime;
+    console.log(`Generate Route - Total request time: ${duration}ms`);
 
     res.status(200).json(result);
 

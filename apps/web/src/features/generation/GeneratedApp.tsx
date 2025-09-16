@@ -1,15 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, memo, useCallback } from 'react'
 import { useAppContext } from '../../contexts/AppContext'
 import Navigation from './Navigation'
 import { contextDetectionService, DomainContext } from '../../services/contextDetectionService'
 import { componentFactory } from '../../services/componentFactory.tsx'
+import { EntityFormErrorBoundary } from '../../components'
 import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
 
 interface GeneratedAppProps {
   generationResult: GenerationResult
 }
 
-const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
+const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
   const { reset } = useAppContext()
 
   // Detect context for the entities once when component mounts or data changes
@@ -17,8 +18,8 @@ const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
     return contextDetectionService.detectContext(generationResult.entities)
   }, [generationResult.entities])
 
-  // Get context-aware header information
-  const getContextInfo = () => {
+  // Memoize context-aware header information
+  const contextInfo = useMemo(() => {
     const primaryContext = contextResult.primaryContext
 
     switch (primaryContext) {
@@ -47,9 +48,23 @@ const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
           icon: '📱'
         }
     }
-  }
+  }, [contextResult.primaryContext])
 
-  const contextInfo = getContextInfo()
+  // Memoize entity components to prevent unnecessary re-renders
+  const entityComponents = useMemo(() => {
+    return generationResult.entities.map((entity, index) => {
+      const EntityComponent = componentFactory.getComponent(entity, contextResult)
+      return (
+        <EntityFormErrorBoundary key={`${entity.name}-${index}`}>
+          <EntityComponent entity={entity} />
+        </EntityFormErrorBoundary>
+      )
+    })
+  }, [generationResult.entities, contextResult])
+
+  const handleReset = useCallback(() => {
+    reset()
+  }, [reset])
 
   return (
     <div className="mt-6 bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg">
@@ -64,7 +79,7 @@ const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
             </div>
           </div>
           <button
-            onClick={reset}
+            onClick={handleReset}
             className="px-4 py-2 text-sm font-medium bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 whitespace-nowrap"
           >
             Generate New App
@@ -105,13 +120,7 @@ const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Data Management</h2>
             <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2">
-              {generationResult.entities.map((entity, index) => {
-                // Use component factory to get the appropriate component
-                const EntityComponent = componentFactory.getComponent(entity, contextResult)
-                return (
-                  <EntityComponent key={`${entity.name}-${index}`} entity={entity} />
-                )
-              })}
+              {entityComponents}
             </div>
           </div>
         )}
@@ -136,6 +145,8 @@ const GeneratedApp = ({ generationResult }: GeneratedAppProps) => {
       </div>
     </div>
   )
-}
+})
+
+GeneratedApp.displayName = 'GeneratedApp'
 
 export default GeneratedApp

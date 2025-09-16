@@ -1,26 +1,35 @@
+import { memo, useMemo } from 'react'
 import type { Entity } from '@mini-ai-app-builder/shared-types'
 
 interface EntityFormProps {
   entity: Entity
 }
 
-const EntityForm = ({ entity }: EntityFormProps) => {
-  // Generate appropriate input types based on attribute names
-  const getInputType = (attribute: string): string => {
-    const lowercaseAttr = attribute.toLowerCase()
-    if (lowercaseAttr.includes('email')) return 'email'
-    if (lowercaseAttr.includes('password')) return 'password'
-    if (lowercaseAttr.includes('phone')) return 'tel'
-    if (lowercaseAttr.includes('date') || lowercaseAttr.includes('created') || lowercaseAttr.includes('updated')) return 'date'
-    if (lowercaseAttr.includes('age') || lowercaseAttr.includes('count') || lowercaseAttr.includes('number')) return 'number'
-    if (lowercaseAttr.includes('url') || lowercaseAttr.includes('link') || lowercaseAttr.includes('website')) return 'url'
-    return 'text'
-  }
+// Helper functions moved outside component to prevent recreation
+const getInputType = (attribute: string): string => {
+  const lowercaseAttr = attribute.toLowerCase()
+  if (lowercaseAttr.includes('email')) return 'email'
+  if (lowercaseAttr.includes('password')) return 'password'
+  if (lowercaseAttr.includes('phone')) return 'tel'
+  if (lowercaseAttr.includes('date') || lowercaseAttr.includes('created') || lowercaseAttr.includes('updated')) return 'date'
+  if (lowercaseAttr.includes('age') || lowercaseAttr.includes('count') || lowercaseAttr.includes('number')) return 'number'
+  if (lowercaseAttr.includes('url') || lowercaseAttr.includes('link') || lowercaseAttr.includes('website')) return 'url'
+  return 'text'
+}
 
-  // Generate placeholder text
-  const getPlaceholder = (attribute: string): string => {
-    return `Enter ${attribute.toLowerCase()}`
-  }
+const getPlaceholder = (attribute: string): string => {
+  return `Enter ${attribute.toLowerCase()}`
+}
+
+const EntityForm = memo(({ entity }: EntityFormProps) => {
+  // Memoize field data to prevent recalculation
+  const fieldData = useMemo(() => {
+    return entity.attributes.map(attribute => ({
+      name: attribute,
+      type: getInputType(attribute),
+      placeholder: getPlaceholder(attribute)
+    }))
+  }, [entity.attributes])
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -32,39 +41,39 @@ const EntityForm = ({ entity }: EntityFormProps) => {
       </div>
 
       <form className="space-y-4">
-        {entity.attributes.map((attribute, index) => (
+        {fieldData.map((field, index) => (
           <div key={index}>
             <label
-              htmlFor={`${entity.name}-${attribute}`}
+              htmlFor={`${entity.name}-${field.name}`}
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              {attribute}
+              {field.name}
             </label>
-            {attribute.toLowerCase().includes('description') || attribute.toLowerCase().includes('notes') ? (
+            {field.name.toLowerCase().includes('description') || field.name.toLowerCase().includes('notes') ? (
               <textarea
-                id={`${entity.name}-${attribute}`}
+                id={`${entity.name}-${field.name}`}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                placeholder={getPlaceholder(attribute)}
+                placeholder={field.placeholder}
                 disabled
               />
-            ) : attribute.toLowerCase().includes('category') || attribute.toLowerCase().includes('status') || attribute.toLowerCase().includes('type') ? (
+            ) : field.name.toLowerCase().includes('category') || field.name.toLowerCase().includes('status') || field.name.toLowerCase().includes('type') ? (
               <select
-                id={`${entity.name}-${attribute}`}
+                id={`${entity.name}-${field.name}`}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled
               >
-                <option value="">Select {attribute.toLowerCase()}</option>
+                <option value="">Select {field.name.toLowerCase()}</option>
                 <option value="option1">Option 1</option>
                 <option value="option2">Option 2</option>
                 <option value="option3">Option 3</option>
               </select>
             ) : (
               <input
-                type={getInputType(attribute)}
-                id={`${entity.name}-${attribute}`}
+                type={field.type}
+                id={`${entity.name}-${field.name}`}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={getPlaceholder(attribute)}
+                placeholder={field.placeholder}
                 disabled
               />
             )}
@@ -96,6 +105,8 @@ const EntityForm = ({ entity }: EntityFormProps) => {
       </div>
     </div>
   )
-}
+})
+
+EntityForm.displayName = 'EntityForm'
 
 export default EntityForm

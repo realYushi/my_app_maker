@@ -9,8 +9,8 @@ jest.mock('../config', () => ({
   config: {
     gemini: {
       apiKey: 'test-api-key',
-      baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-      model: 'gemini-2.0-flash-exp',
+      baseUrl: process.env.GEMINI_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions',
+      model: process.env.GEMINI_MODEL || 'deepseek/deepseek-chat-v3.1:free',
       timeout: 30000
     }
   }
@@ -40,23 +40,21 @@ describe('AIService', () => {
 
   describe('extractRequirements', () => {
     const validUserText = 'I want to build a task management app for teams';
-    const mockGeminiResponse = {
-      candidates: [{
-        content: {
-          parts: [{
-            text: JSON.stringify({
-              appName: 'Team Task Manager',
-              entities: [
-                { name: 'Task', attributes: ['id', 'title', 'description'] }
-              ],
-              userRoles: [
-                { name: 'Manager', description: 'Manages team tasks' }
-              ],
-              features: [
-                { name: 'Task Creation', description: 'Create new tasks' }
-              ]
-            })
-          }]
+    const mockOpenRouterResponse = {
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            appName: 'Team Task Manager',
+            entities: [
+              { name: 'Task', attributes: ['id', 'title', 'description'] }
+            ],
+            userRoles: [
+              { name: 'Manager', description: 'Manages team tasks' }
+            ],
+            features: [
+              { name: 'Task Creation', description: 'Create new tasks' }
+            ]
+          })
         }
       }]
     };
@@ -64,7 +62,7 @@ describe('AIService', () => {
     it('should successfully extract requirements from valid input', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockGeminiResponse)
+        json: () => Promise.resolve(mockOpenRouterResponse)
       } as Response);
 
       const result = await aiService.extractRequirements(validUserText);
@@ -83,11 +81,12 @@ describe('AIService', () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=test-api-key',
+        'https://openrouter.ai/api/v1/chat/completions',
         expect.objectContaining({
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-api-key'
           }
         })
       );
@@ -112,7 +111,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Gemini API error: 401 Unauthorized', 401)
+        new AIServiceError('OpenRouter API error: 401 Unauthorized', 401)
       );
     });
 
@@ -129,7 +128,7 @@ describe('AIService', () => {
       );
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Gemini API request timeout', 504)
+        new AIServiceError('OpenRouter API request timeout', 504)
       );
 
       global.AbortController = originalAbortController;
@@ -137,11 +136,9 @@ describe('AIService', () => {
 
     it('should handle invalid JSON responses', async () => {
       const invalidJsonResponse = {
-        candidates: [{
-          content: {
-            parts: [{
-              text: 'Invalid JSON response from Gemini'
-            }]
+        choices: [{
+          message: {
+            content: 'Invalid JSON response from OpenRouter'
           }
         }]
       };
@@ -152,20 +149,18 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid JSON response from Gemini API', 500)
+        new AIServiceError('Invalid JSON response from OpenRouter API', 500)
       );
     });
 
     it('should handle missing required fields in response', async () => {
       const incompleteResponse = {
-        candidates: [{
-          content: {
-            parts: [{
-              text: JSON.stringify({
-                appName: 'Test App'
-                // Missing entities, userRoles, features
-              })
-            }]
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              appName: 'Test App'
+              // Missing entities, userRoles, features
+            })
           }
         }]
       };
@@ -180,9 +175,9 @@ describe('AIService', () => {
       );
     });
 
-    it('should handle empty response from Gemini', async () => {
+    it('should handle empty response from OpenRouter', async () => {
       const emptyResponse = {
-        candidates: []
+        choices: []
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -191,7 +186,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('No response from Gemini API', 500)
+        new AIServiceError('No response from OpenRouter API', 500)
       );
     });
 
@@ -199,22 +194,20 @@ describe('AIService', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network connection failed'));
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Gemini API request failed: Network connection failed', 500)
+        new AIServiceError('OpenRouter API request failed: Network connection failed', 500)
       );
     });
 
     it('should validate response structure thoroughly', async () => {
       const invalidStructureResponse = {
-        candidates: [{
-          content: {
-            parts: [{
-              text: JSON.stringify({
-                appName: '',
-                entities: [],
-                userRoles: [],
-                features: []
-              })
-            }]
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              appName: '',
+              entities: [],
+              userRoles: [],
+              features: []
+            })
           }
         }]
       };
@@ -225,7 +218,7 @@ describe('AIService', () => {
       } as Response);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid appName in Gemini response', 500)
+        new AIServiceError('Invalid appName in OpenRouter response', 500)
       );
     });
   });
