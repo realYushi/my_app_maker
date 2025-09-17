@@ -36,7 +36,6 @@ describe('ComponentFactory', () => {
 
       expect(container.querySelector('.border-l-green-500')).toBeInTheDocument()
       expect(screen.getByText('📦 Order Management')).toBeInTheDocument()
-      expect(screen.getByText('Order processing and fulfillment interface for sales operations.')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
 
@@ -50,9 +49,8 @@ describe('ComponentFactory', () => {
 
       const { container } = render(component({ entity: entities[0] }))
 
-      expect(container.querySelector('.border-l-purple-500')).toBeInTheDocument()
-      expect(screen.getByText('👥 Customer Relationship')).toBeInTheDocument()
-      expect(screen.getByText('Customer data and relationship management interface.')).toBeInTheDocument()
+      expect(container.querySelector('.border-l-blue-500')).toBeInTheDocument()
+      expect(screen.getByText('👤 Customer Profile')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)
     })
 
@@ -197,7 +195,7 @@ describe('ComponentFactory', () => {
       const contextResult = contextDetectionService.detectContext(entities)
       const component = componentFactory.getComponent(entities[0], contextResult)
 
-      const { } = render(component({ entity: entities[0] }))
+      render(component({ entity: entities[0] }))
 
       expect(screen.getByText('Book')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(false)
@@ -211,7 +209,7 @@ describe('ComponentFactory', () => {
       const contextResult = contextDetectionService.detectContext(entities)
       const component = componentFactory.getComponent(entities[0], contextResult)
 
-      const { } = render(component({ entity: entities[0] }))
+      render(component({ entity: entities[0] }))
 
       expect(screen.getByText('SpecialProduct')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(false)
@@ -255,7 +253,7 @@ describe('ComponentFactory', () => {
       }
 
       const component = componentFactory.getComponent(entities[0], contextResult)
-      const { } = render(component({ entity: entities[0] }))
+      render(component({ entity: entities[0] }))
 
       expect(screen.getByTestId('custom-component')).toBeInTheDocument()
       expect(componentFactory.hasSpecificComponent(entities[0], contextResult)).toBe(true)

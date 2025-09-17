@@ -8,9 +8,18 @@ interface CartItem {
   price: number
 }
 
+interface OrderData {
+  items: CartItem[]
+  shipping: ShippingInfo
+  payment: PaymentInfo
+  total: number
+  orderId: string
+  orderNumber: string
+}
+
 interface CheckoutFlowProps {
   items?: CartItem[]
-  onComplete?: (orderData: any) => void
+  onComplete?: (orderData: OrderData) => void
   onCancel?: () => void
 }
 
@@ -111,6 +120,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
         shipping: shippingInfo,
         payment: paymentInfo,
         total: total,
+        orderId: 'order-' + Date.now(),
         orderNumber: 'ORD-' + Date.now().toString(36).toUpperCase()
       })
     }, 3000)

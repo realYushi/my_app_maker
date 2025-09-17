@@ -1,4 +1,4 @@
-import { useState, memo, useMemo, useCallback } from 'react'
+import { useState, memo, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { UserGroupIcon, CogIcon, EyeIcon } from '@heroicons/react/20/solid'
@@ -7,6 +7,8 @@ import type { UserRole, Feature } from '@mini-ai-app-builder/shared-types'
 interface NavigationProps {
   userRoles: UserRole[]
   features: Feature[]
+  onOverviewToggle?: () => void
+  showOverview?: boolean
 }
 
 interface NavigationSection {
@@ -24,8 +26,9 @@ interface NavigationItem {
   description?: string
 }
 
-const Navigation = memo(({ userRoles, features }: NavigationProps) => {
+const Navigation = memo(({ userRoles, features, onOverviewToggle, showOverview }: NavigationProps) => {
   const [activeTab, setActiveTab] = useState<string>('overview')
+  const dropdownRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
 
   // Memoize organized navigation sections with better categorization
   const navigationSections = useMemo((): NavigationSection[] => {
@@ -97,6 +100,36 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
     })
   }, [])
 
+  const handleItemClick = useCallback((itemId: string, currentSectionId: string) => {
+    setActiveTab(itemId)
+    // Always keep the dropdown open when clicking items within it
+    // The dropdown should stay open until user clicks outside or clicks a different section
+    setExpandedSections(new Set([currentSectionId]))
+  }, [])
+
+  // Handle clicks outside dropdowns to close them
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      let clickedInsideAnyDropdown = false
+
+      dropdownRefs.current.forEach((ref) => {
+        if (ref && ref.contains(target)) {
+          clickedInsideAnyDropdown = true
+        }
+      })
+
+      if (!clickedInsideAnyDropdown) {
+        setExpandedSections(new Set())
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
   return (
     <Disclosure as="nav" className="bg-gray-50 border-b border-gray-200">
       {({ open }) => (
@@ -110,9 +143,15 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                     {/* Handle single-item sections that match section name directly */}
                     {section.items.length === 1 && section.items[0].name === section.name ? (
                       <button
-                        onClick={() => handleTabClick(section.items[0].id)}
+                        onClick={() => {
+                          if (section.id === 'overview' && onOverviewToggle) {
+                            onOverviewToggle()
+                          } else {
+                            handleTabClick(section.items[0].id)
+                          }
+                        }}
                         className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          activeTab === section.items[0].id
+                          (section.id === 'overview' && showOverview) || (section.id !== 'overview' && activeTab === section.items[0].id)
                             ? 'bg-blue-100 text-blue-700'
                             : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                         }`}
@@ -121,7 +160,7 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                         <span>{section.name}</span>
                       </button>
                     ) : (
-                      <div className="relative">
+                      <div className="relative" ref={(el) => dropdownRefs.current.set(section.id, el)}>
                         <button
                           onClick={() => toggleSection(section.id)}
                           className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -142,7 +181,9 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                               {section.items.map((item) => (
                                 <button
                                   key={item.id}
-                                  onClick={() => handleTabClick(item.id)}
+                                  onClick={() => {
+                                    handleItemClick(item.id, section.id)
+                                  }}
                                   className={`w-full text-left px-4 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
                                     activeTab === item.id
                                       ? 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
@@ -162,11 +203,6 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                                       </span>
                                     )}
                                   </div>
-                                  {item.description && activeTab === item.id && (
-                                    <div className="mt-1 text-xs text-gray-500 truncate">
-                                      {item.description}
-                                    </div>
-                                  )}
                                 </button>
                               ))}
                             </div>
@@ -184,9 +220,15 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                   section.items.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => handleTabClick(item.id)}
+                      onClick={() => {
+                        if (item.id === 'overview' && onOverviewToggle) {
+                          onOverviewToggle()
+                        } else {
+                          handleItemClick(item.id, section.id)
+                        }
+                      }}
                       className={`flex-shrink-0 px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                        activeTab === item.id
+                        (item.id === 'overview' && showOverview) || (item.id !== 'overview' && activeTab === item.id)
                           ? 'bg-blue-100 text-blue-700'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
@@ -220,7 +262,7 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
               </div>
             </div>
 
-            {/* Active Tab Info - Desktop & Tablet */}
+            {/* Active Tab Info - Desktop & Tablet - Only show description when item is selected, not in dropdown */}
             <div className="mt-3 hidden md:block">
               {activeTab !== 'overview' && (
                 <div className="text-sm text-gray-600 bg-gray-100 rounded-md p-3">
@@ -265,9 +307,15 @@ const Navigation = memo(({ userRoles, features }: NavigationProps) => {
                           <Disclosure.Button
                             key={item.id}
                             as="button"
-                            onClick={() => handleTabClick(item.id)}
+                            onClick={() => {
+                              if (item.id === 'overview' && onOverviewToggle) {
+                                onOverviewToggle()
+                              } else {
+                                handleItemClick(item.id, section.id)
+                              }
+                            }}
                             className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                              activeTab === item.id
+                              (item.id === 'overview' && showOverview) || (item.id !== 'overview' && activeTab === item.id)
                                 ? 'bg-blue-100 text-blue-700 border-l-2 border-blue-500'
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                             }`}

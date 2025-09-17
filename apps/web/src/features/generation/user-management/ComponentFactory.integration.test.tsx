@@ -4,11 +4,8 @@ import { componentFactory } from '../../../services/componentFactory'
 import { DomainContext } from '../../../services/contextDetectionService'
 import type { Entity } from '@mini-ai-app-builder/shared-types'
 
-interface ContextDetectionResult {
-  primaryContext: DomainContext
-  contextScores: any[]
-  entityDomainMap: Map<string, DomainContext>
-}
+// Use the actual interfaces from the service
+import type { ContextDetectionResult } from '../../../services/contextDetectionService'
 
 const createMockContextResult = (
   entityDomainMap: Map<string, DomainContext>,

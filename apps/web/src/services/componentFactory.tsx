@@ -15,6 +15,18 @@ import {
   AdminSystemDisplay,
   AdminReportDisplay
 } from '../features/generation/admin'
+import {
+  EcommerceOrderForm,
+  EcommerceCustomerForm
+} from './components/EcommerceComponents'
+import {
+  UserManagementUserForm,
+  UserManagementRoleForm
+} from './components/UserManagementComponents'
+import {
+  AdminSystemForm,
+  AdminReportForm
+} from './components/AdminComponents'
 
 // Component factory interface
 export interface DomainComponent {
@@ -37,116 +49,7 @@ interface ComponentRegistry {
   }
 }
 
-// E-commerce specific components (keeping existing order and customer forms for backward compatibility)
-const EcommerceOrderForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-green-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-        📦 Order Management
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      Order processing and fulfillment interface for sales operations.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
-const EcommerceCustomerForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-        👥 Customer Relationship
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      Customer data and relationship management interface.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
-// User management specific components
-const UserManagementUserForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-indigo-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
-        👤 User Account
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      User account management with authentication and profile settings.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
-const UserManagementRoleForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-yellow-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-        🔐 Access Control
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      Role-based access control and permission management interface.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
-// Admin specific components
-const AdminSystemForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-red-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-        ⚙️ System Admin
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      System administration and configuration management interface.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
-
-const AdminReportForm: DomainComponent = ({ entity }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow border-l-4 border-l-orange-500">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-medium text-gray-900 flex items-center">
-        <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-        {entity.name}
-      </h3>
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800">
-        📊 Analytics & Reports
-      </span>
-    </div>
-    <div className="mb-3 text-sm text-gray-600">
-      Analytics dashboard and reporting interface for data insights.
-    </div>
-    <EntityForm entity={entity} />
-  </div>
-)
+// All domain-specific components are now imported from separate files to fix react-refresh/only-export-components
 
 class ComponentFactory {
   private registry: ComponentRegistry = {

@@ -14,8 +14,8 @@ const mockFeatures: Feature[] = [
   { name: 'Dashboard', description: 'Main application dashboard' }
 ]
 
-const renderNavigation = (userRoles: UserRole[] = mockUserRoles, features: Feature[] = mockFeatures) => {
-  return render(<Navigation userRoles={userRoles} features={features} />)
+const renderNavigation = (userRoles: UserRole[] = mockUserRoles, features: Feature[] = mockFeatures, showOverview: boolean = true) => {
+  return render(<Navigation userRoles={userRoles} features={features} showOverview={showOverview} />)
 }
 
 describe('Navigation', () => {

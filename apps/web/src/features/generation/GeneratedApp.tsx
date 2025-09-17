@@ -1,4 +1,4 @@
-import { useMemo, memo, useCallback } from 'react'
+import { useMemo, memo, useCallback, useState } from 'react'
 import { Tab } from '@headlessui/react'
 import { useAppContext } from '../../contexts/AppContext'
 import Navigation from './Navigation'
@@ -13,6 +13,7 @@ interface GeneratedAppProps {
 
 const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
   const { reset } = useAppContext()
+  const [showOverview, setShowOverview] = useState(true)
 
   // Detect context for the entities once when component mounts or data changes
   const contextResult = useMemo(() => {
@@ -89,32 +90,39 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
       </div>
 
       {/* Navigation */}
-      <Navigation userRoles={generationResult.userRoles} features={generationResult.features} />
+      <Navigation
+        userRoles={generationResult.userRoles}
+        features={generationResult.features}
+        onOverviewToggle={() => setShowOverview(!showOverview)}
+        showOverview={showOverview}
+      />
 
       {/* Main Content Area */}
       <div className="p-4 sm:p-6">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">App Overview</h2>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm sm:text-base text-gray-700">
-              This is a mock UI for <strong>{generationResult.appName}</strong> with{' '}
-              <span className="inline-block">{generationResult.entities.length} entities,</span>{' '}
-              <span className="inline-block">{generationResult.userRoles.length} user roles,</span>{' '}
-              <span className="inline-block">and {generationResult.features.length} features.</span>
-            </p>
-            {contextResult.primaryContext !== DomainContext.GENERIC && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-                <span className="font-medium">Detected Context:</span>
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                  {contextResult.primaryContext.replace('_', ' ').toUpperCase()}
-                </span>
-                <span className="text-gray-500">
-                  ({contextResult.contextScores.find(cs => cs.domain === contextResult.primaryContext)?.matchedEntities.length || 0} matched entities)
-                </span>
-              </div>
-            )}
+        {showOverview && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">App Overview</h2>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm sm:text-base text-gray-700">
+                This is a mock UI for <strong>{generationResult.appName}</strong> with{' '}
+                <span className="inline-block">{generationResult.entities.length} entities,</span>{' '}
+                <span className="inline-block">{generationResult.userRoles.length} user roles,</span>{' '}
+                <span className="inline-block">and {generationResult.features.length} features.</span>
+              </p>
+              {contextResult.primaryContext !== DomainContext.GENERIC && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                  <span className="font-medium">Detected Context:</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    {contextResult.primaryContext.replace('_', ' ').toUpperCase()}
+                  </span>
+                  <span className="text-gray-500">
+                    ({contextResult.contextScores.find(cs => cs.domain === contextResult.primaryContext)?.matchedEntities.length || 0} matched entities)
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Entity Forms Section */}
         {generationResult.entities.length > 0 && (

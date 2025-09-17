@@ -11,7 +11,7 @@ interface SystemSetting {
   name: string
   description: string
   type: 'toggle' | 'select' | 'input' | 'slider'
-  value: any
+  value: string | number | boolean
   options?: string[]
   min?: number
   max?: number
@@ -108,7 +108,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
   const [pendingChanges, setPendingChanges] = useState<Set<string>>(new Set())
   const [confirmDialog, setConfirmDialog] = useState<{ setting: SystemSetting | null; action: string }>({ setting: null, action: '' })
 
-  const handleSettingChange = (settingId: string, newValue: any) => {
+  const handleSettingChange = (settingId: string, newValue: string | number | boolean) => {
     const setting = settings.find(s => s.id === settingId)
 
     if (setting?.critical) {
@@ -119,7 +119,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
     updateSetting(settingId, newValue)
   }
 
-  const updateSetting = (settingId: string, newValue: any) => {
+  const updateSetting = (settingId: string, newValue: string | number | boolean) => {
     setSettings(prev => prev.map(setting =>
       setting.id === settingId ? { ...setting, value: newValue } : setting
     ))
@@ -161,7 +161,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={setting.value}
+              checked={setting.value as boolean}
               onChange={(e) => handleSettingChange(setting.id, e.target.checked)}
               className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
                 setting.critical ? 'border-red-300' : ''
@@ -176,7 +176,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
       case 'select':
         return (
           <select
-            value={setting.value}
+            value={setting.value as string}
             onChange={(e) => handleSettingChange(setting.id, e.target.value)}
             className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               hasPendingChange ? 'ring-yellow-300' : ''
@@ -192,7 +192,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
         return (
           <input
             type="text"
-            value={setting.value}
+            value={setting.value as string}
             onChange={(e) => handleSettingChange(setting.id, e.target.value)}
             className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               hasPendingChange ? 'ring-yellow-300' : ''
@@ -207,7 +207,7 @@ const AdminControlPanel = ({ entity }: AdminControlPanelProps): React.ReactEleme
               type="range"
               min={setting.min}
               max={setting.max}
-              value={setting.value}
+              value={setting.value as number}
               onChange={(e) => handleSettingChange(setting.id, parseInt(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
