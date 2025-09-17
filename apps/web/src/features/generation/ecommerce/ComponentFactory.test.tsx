@@ -68,9 +68,11 @@ describe('ComponentFactory E-commerce Integration', () => {
       const Component = componentFactory.getComponent(entity, contextResult)
       render(<Component entity={entity} />)
 
-      // Should render the generic EntityForm
+      // Should render the generic EntityForm with progressive disclosure
       expect(screen.getByText('unknown_entity')).toBeInTheDocument()
-      expect(screen.getByText('field1')).toBeInTheDocument()
+      // In the new progressive disclosure design, non-essential fields are hidden in summary mode
+      expect(screen.getByText('2 total fields')).toBeInTheDocument()
+      expect(screen.getByText('Show Details')).toBeInTheDocument()
     })
 
     it('handles generic domain entities with fallback', () => {
