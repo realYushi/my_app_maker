@@ -16,6 +16,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
   const { reset } = useAppContext()
   const [showOverview, setShowOverview] = useState(true)
   const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview')
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0)
 
   // Detect context for the entities once when component mounts or data changes
   const contextResult = useMemo(() => {
@@ -59,12 +60,12 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
     return generationResult.entities.map((entity, index) => {
       const EntityComponent = componentFactory.getComponent(entity, contextResult)
       return (
-        <EntityFormErrorBoundary key={`${entity.name}-${index}`}>
-          <EntityComponent entity={entity} />
+        <EntityFormErrorBoundary key={`${entity.name}-${index}-${selectedTabIndex === index ? 'active' : 'inactive'}`}>
+          <EntityComponent entity={entity} tabKey={selectedTabIndex === index ? selectedTabIndex : -1} />
         </EntityFormErrorBoundary>
       )
     })
-  }, [generationResult.entities, contextResult])
+  }, [generationResult.entities, contextResult, selectedTabIndex])
 
   const handleReset = useCallback(() => {
     reset()
@@ -251,7 +252,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Entities Quick View */}
               {generationResult.entities.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer">
                   <h4 className="text-base font-medium text-gray-900 mb-3">Data Entities</h4>
                   <div className="space-y-2">
                     {generationResult.entities.slice(0, 3).map((entity, index) => (
@@ -271,7 +272,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
 
               {/* Features Quick View */}
               {generationResult.features.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer">
                   <h4 className="text-base font-medium text-gray-900 mb-3">Key Features</h4>
                   <div className="space-y-2">
                     {generationResult.features.slice(0, 3).map((feature, index) => (
@@ -291,7 +292,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
 
               {/* User Roles Quick View */}
               {generationResult.userRoles.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer">
                   <h4 className="text-base font-medium text-gray-900 mb-3">User Roles</h4>
                   <div className="space-y-2">
                     {generationResult.userRoles.slice(0, 3).map((role, index) => (
@@ -330,7 +331,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
             {generationResult.entities.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Data Management</h3>
-            <Tab.Group>
+            <Tab.Group selectedIndex={selectedTabIndex} onChange={setSelectedTabIndex}>
               <Tab.List
                 className="flex flex-wrap gap-1 sm:gap-2 p-1 sm:p-2 bg-gray-100 rounded-lg overflow-x-auto"
                 aria-label="Entity management tabs"
@@ -375,7 +376,7 @@ const GeneratedApp = memo(({ generationResult }: GeneratedAppProps) => {
               {generationResult.features.map((feature, index) => (
                 <Disclosure key={index} as="div" defaultOpen={false}>
                   {({ open }) => (
-                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow">
+                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-lg hover:border-gray-300 transition-all duration-200">
                       {/* Feature Header */}
                       <Disclosure.Button className="w-full px-4 sm:px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
                         <div className="flex items-center justify-between">

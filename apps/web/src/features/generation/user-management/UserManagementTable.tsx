@@ -1,14 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import type { Entity } from '@mini-ai-app-builder/shared-types'
 
 interface UserManagementTableProps {
   entity: Entity
+  tabKey?: number
 }
 
-const UserManagementTable = ({ entity }: UserManagementTableProps): React.ReactElement => {
+const UserManagementTable = ({ entity, tabKey }: UserManagementTableProps): React.ReactElement => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRole, setSelectedRole] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Reset search when tab changes
+  useEffect(() => {
+    if (tabKey !== undefined && tabKey >= 0) {
+      setSearchTerm('')
+      setSelectedRole('all')
+      setCurrentPage(1)
+    }
+  }, [tabKey])
   const itemsPerPage = 5
 
   // Generate mock user data based on entity

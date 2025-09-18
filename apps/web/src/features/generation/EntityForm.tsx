@@ -5,6 +5,7 @@ import type { Entity } from '@mini-ai-app-builder/shared-types'
 
 interface EntityFormProps {
   entity: Entity
+  tabKey?: number
 }
 
 // Helper functions moved outside component to prevent recreation
@@ -23,8 +24,12 @@ const getPlaceholder = (attribute: string): string => {
   return `Enter ${attribute.toLowerCase()}`
 }
 
-const EntityForm = memo(({ entity }: EntityFormProps) => {
+const EntityForm = memo(({ entity, tabKey = undefined }: EntityFormProps) => {
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary')
+
+  // Note: tabKey is accepted for interface consistency but not used in EntityForm
+  // The tabKey prop is primarily used in UserManagementTable for search reset functionality
+  void tabKey // Explicitly void unused parameter
 
   // Memoize field data to prevent recalculation
   const fieldData = useMemo(() => {

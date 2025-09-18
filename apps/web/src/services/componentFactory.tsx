@@ -30,7 +30,7 @@ import {
 
 // Component factory interface
 export interface DomainComponent {
-  (props: { entity: Entity }): React.ReactElement
+  (props: { entity: Entity; tabKey?: number }): React.ReactElement
 }
 
 // Registry mapping domains to React components
@@ -150,7 +150,7 @@ class ComponentFactory {
     }
 
     // Fallback to generic EntityForm for unknown entity types
-    return ({ entity }) => <EntityForm entity={entity} />
+    return ({ entity, tabKey }) => <EntityForm entity={entity} tabKey={tabKey} />
   }
 
   /**
