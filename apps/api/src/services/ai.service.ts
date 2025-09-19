@@ -34,6 +34,8 @@ export class AIService {
           "HTTP-Referer": "https://my-app-maker-frontend.onrender.com",
           "X-Title": "Mini AI App Builder",
         },
+        // Allow custom fetch for testing
+        fetch: (global as any).fetch,
       });
       this.model = config.gemini.model;
       this.timeout = config.gemini.timeout;

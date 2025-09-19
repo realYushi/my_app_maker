@@ -4,11 +4,11 @@ import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 // Mock fetch globally
 global.fetch = jest.fn();
 
-// Mock the config to prevent API key requirement
+// Mock the config to use a valid API key for testing
 jest.mock('../config', () => ({
   config: {
     gemini: {
-      apiKey: 'test-api-key',
+      apiKey: 'valid_test_api_key_not_mock_mode',
       baseUrl: process.env.GEMINI_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions',
       model: process.env.GEMINI_MODEL || 'deepseek/deepseek-chat-v3.1:free',
       timeout: 30000
@@ -30,6 +30,9 @@ describe('AIService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     aiService = new AIService();
+  });
+
+  describe('Mock Mode', () => {
   });
 
   describe('constructor', () => {
