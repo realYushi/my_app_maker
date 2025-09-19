@@ -1,14 +1,16 @@
 import { AIService, AIServiceError } from '../services/ai.service';
 import { GenerationResult } from '@mini-ai-app-builder/shared-types';
+import OpenAI from 'openai';
 
-// Mock fetch globally
-global.fetch = jest.fn();
+// Mock OpenAI module
+jest.mock('openai');
+const MockedOpenAI = OpenAI as jest.MockedClass<typeof OpenAI>;
 
 // Mock the config to use a valid API key for testing
 jest.mock('../config', () => ({
   config: {
     gemini: {
-      apiKey: 'valid_test_api_key_not_mock_mode',
+      apiKey: 'test-api-key',
       baseUrl: process.env.GEMINI_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions',
       model: process.env.GEMINI_MODEL || 'deepseek/deepseek-chat-v3.1:free',
       timeout: 30000
@@ -25,10 +27,22 @@ jest.mock('../services/error-logging.service', () => ({
 
 describe('AIService', () => {
   let aiService: AIService;
-  const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+  let mockChatCompletions: jest.Mocked<any>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Setup OpenAI mock
+    mockChatCompletions = {
+      create: jest.fn()
+    };
+
+    MockedOpenAI.mockImplementation(() => ({
+      chat: {
+        completions: mockChatCompletions
+      }
+    } as any));
+
     aiService = new AIService();
   });
 
@@ -63,10 +77,7 @@ describe('AIService', () => {
     };
 
     it('should successfully extract requirements from valid input', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockOpenRouterResponse)
-      } as Response);
+      mockChatCompletions.create.mockResolvedValueOnce(mockOpenRouterResponse);
 
       const result = await aiService.extractRequirements(validUserText);
 
@@ -83,14 +94,18 @@ describe('AIService', () => {
         ]
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://openrouter.ai/api/v1/chat/completions',
+      expect(mockChatCompletions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-api-key'
-          }
+          model: 'deepseek/deepseek-chat-v3.1:free',
+          messages: expect.arrayContaining([
+            expect.objectContaining({ role: 'system' }),
+            expect.objectContaining({
+              role: 'user',
+              content: validUserText.trim()
+            })
+          ]),
+          temperature: 0.3,
+          max_tokens: 2000,
         })
       );
     });
@@ -106,15 +121,13 @@ describe('AIService', () => {
     });
 
     it('should handle LLM API error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
-        text: () => Promise.resolve('Invalid API key')
-      } as Response);
+      const apiError = new Error('Invalid API key');
+      apiError.name = 'APIError';
+      (apiError as any).status = 401;
+      mockChatCompletions.create.mockRejectedValueOnce(apiError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('OpenRouter API error: 401 Unauthorized', 401)
+        new AIServiceError('OpenRouter API request failed: Invalid API key', 500)
       );
     });
 
@@ -126,12 +139,12 @@ describe('AIService', () => {
         signal: {}
       }));
 
-      mockFetch.mockRejectedValueOnce(
-        Object.assign(new Error('Request timeout'), { name: 'AbortError' })
-      );
+      const timeoutError = new Error('Request timeout');
+      timeoutError.name = 'AbortError';
+      mockChatCompletions.create.mockRejectedValueOnce(timeoutError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('OpenRouter API request timeout', 504)
+        new AIServiceError('OpenRouter API request failed: Request timeout', 504)
       );
 
       global.AbortController = originalAbortController;
@@ -146,10 +159,7 @@ describe('AIService', () => {
         }]
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(invalidJsonResponse)
-      } as Response);
+      mockChatCompletions.create.mockResolvedValueOnce(invalidJsonResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
         new AIServiceError('Invalid JSON response from OpenRouter API', 500)
@@ -168,10 +178,7 @@ describe('AIService', () => {
         }]
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(incompleteResponse)
-      } as Response);
+      mockChatCompletions.create.mockResolvedValueOnce(incompleteResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
         new AIServiceError('Missing required field: entities', 500)
@@ -183,21 +190,19 @@ describe('AIService', () => {
         choices: []
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(emptyResponse)
-      } as Response);
+      mockChatCompletions.create.mockResolvedValueOnce(emptyResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('No response from OpenRouter API', 500)
+        new AIServiceError('Empty response from OpenRouter API', 500)
       );
     });
 
     it('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network connection failed'));
+      const networkError = new Error('Network connection failed');
+      mockChatCompletions.create.mockRejectedValueOnce(networkError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('OpenRouter API request failed: Network connection failed', 500)
+        new AIServiceError(`OpenRouter API request failed: ${networkError.message}`, 500)
       );
     });
 
@@ -215,10 +220,7 @@ describe('AIService', () => {
         }]
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(invalidStructureResponse)
-      } as Response);
+      mockChatCompletions.create.mockResolvedValueOnce(invalidStructureResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
         new AIServiceError('Invalid appName in OpenRouter response', 500)
