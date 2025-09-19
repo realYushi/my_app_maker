@@ -1,24 +1,7 @@
 import { GenerationResult } from "@mini-ai-app-builder/shared-types";
 import { config } from "../config";
 import { errorLoggingService } from "./error-logging.service";
-
-export interface OpenRouterRequest {
-  model: string;
-  messages: Array<{
-    role: 'system' | 'user' | 'assistant';
-    content: string;
-  }>;
-  temperature?: number;
-  max_tokens?: number;
-}
-
-export interface OpenRouterResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
+import OpenAI from 'openai';
 
 export class AIServiceError extends Error {
   constructor(
@@ -32,8 +15,7 @@ export class AIServiceError extends Error {
 }
 
 export class AIService {
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
+  private readonly openai: OpenAI | null;
   private readonly model: string;
   private readonly timeout: number;
 
@@ -41,13 +23,18 @@ export class AIService {
     // For development/testing, allow mock mode when API key is not set
     if (!config.gemini.apiKey || config.gemini.apiKey === "test_key") {
       console.warn("Running in mock mode - OpenRouter API key not configured");
-      this.baseUrl = "";
-      this.apiKey = "";
+      this.openai = null;
       this.model = "";
       this.timeout = 5000;
     } else {
-      this.baseUrl = config.gemini.baseUrl;
-      this.apiKey = config.gemini.apiKey;
+      this.openai = new OpenAI({
+        baseURL: config.gemini.baseUrl,
+        apiKey: config.gemini.apiKey,
+        defaultHeaders: {
+          "HTTP-Referer": "https://my-app-maker-frontend.onrender.com",
+          "X-Title": "Mini AI App Builder",
+        },
+      });
       this.model = config.gemini.model;
       this.timeout = config.gemini.timeout;
     }
@@ -99,63 +86,31 @@ Respond with only the JSON object, no other text.`;
     }
 
     // Mock mode for testing
-    if (!this.apiKey || this.apiKey === "test_key") {
+    if (!this.openai) {
       const result = this.getMockResponse(userText);
       const duration = Date.now() - startTime;
       console.log(`AI Service (Mock) - Request completed in ${duration}ms`);
       return result;
     }
 
-    const requestBody: OpenRouterRequest = {
-      model: this.model,
-      messages: [
-        {
-          role: 'system',
-          content: this.getExtractionPrompt()
-        },
-        {
-          role: 'user',
-          content: userText.trim()
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-    };
-
-    let timeoutId: NodeJS.Timeout | undefined;
-
     try {
-      const controller = new AbortController();
-      timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-      const response = await fetch(
-        this.baseUrl,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${this.apiKey}`,
+      const completion = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: this.getExtractionPrompt()
           },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        }
-      );
+          {
+            role: 'user',
+            content: userText.trim()
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new AIServiceError(
-          `OpenRouter API error: ${response.status} ${response.statusText}`,
-          response.status
-        );
-      }
-
-      const data = (await response.json()) as OpenRouterResponse;
-
-      if (!data.choices || data.choices.length === 0) {
-        throw new AIServiceError("No response from OpenRouter API", 500);
-      }
-
-      const content = data.choices[0].message.content;
+      const content = completion.choices[0]?.message?.content;
       if (!content) {
         throw new AIServiceError("Empty response from OpenRouter API", 500);
       }
@@ -192,9 +147,6 @@ Respond with only the JSON object, no other text.`;
       }
 
       if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          throw new AIServiceError("OpenRouter API request timeout", 504, error);
-        }
         throw new AIServiceError(
           `OpenRouter API request failed: ${error.message}`,
           500,
@@ -203,11 +155,6 @@ Respond with only the JSON object, no other text.`;
       }
 
       throw new AIServiceError("Unknown error occurred", 500);
-    } finally {
-      // Always clear the timeout to prevent Jest open handles
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     }
   }
 
