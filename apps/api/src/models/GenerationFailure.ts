@@ -5,40 +5,46 @@ export interface IGenerationFailure extends Document {
   userInput: string;
   errorSource: string;
   errorMessage: string;
-  llmResponseRaw?: any;
+  llmResponseRaw?: Record<string, unknown>;
 }
 
-const GenerationFailureSchema: Schema = new Schema({
-  timestamp: {
-    type: Date,
-    default: Date.now,
-    required: true
+const GenerationFailureSchema: Schema = new Schema(
+  {
+    timestamp: {
+      type: Date,
+      default: Date.now,
+      required: true,
+    },
+    userInput: {
+      type: String,
+      required: true,
+      maxlength: 10000,
+    },
+    errorSource: {
+      type: String,
+      required: true,
+      enum: ['validation', 'gemini_api', 'parsing', 'timeout', 'network', 'unknown'],
+    },
+    errorMessage: {
+      type: String,
+      required: true,
+      maxlength: 1000,
+    },
+    llmResponseRaw: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+    },
   },
-  userInput: {
-    type: String,
-    required: true,
-    maxlength: 10000
+  {
+    timestamps: true,
+    collection: 'generation_failures',
   },
-  errorSource: {
-    type: String,
-    required: true,
-    enum: ['validation', 'gemini_api', 'parsing', 'timeout', 'network', 'unknown']
-  },
-  errorMessage: {
-    type: String,
-    required: true,
-    maxlength: 1000
-  },
-  llmResponseRaw: {
-    type: mongoose.Schema.Types.Mixed,
-    required: false
-  }
-}, {
-  timestamps: true,
-  collection: 'generation_failures'
-});
+);
 
 GenerationFailureSchema.index({ timestamp: -1 });
 GenerationFailureSchema.index({ errorSource: 1 });
 
-export const GenerationFailure = mongoose.model<IGenerationFailure>('GenerationFailure', GenerationFailureSchema);
+export const GenerationFailure = mongoose.model<IGenerationFailure>(
+  'GenerationFailure',
+  GenerationFailureSchema,
+);

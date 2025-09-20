@@ -9,7 +9,7 @@ export const viewports = {
   mobile: devices['iPhone 12'].viewport!,
   tablet: { width: 768, height: 1024 },
   desktop: { width: 1920, height: 1080 },
-  widescreen: { width: 2560, height: 1440 }
+  widescreen: { width: 2560, height: 1440 },
 };
 
 // Test timeouts
@@ -17,7 +17,7 @@ export const timeouts = {
   short: 5000,
   medium: 10000,
   long: 30000,
-  generation: 30000
+  generation: 30000,
 };
 
 // Test data validation helpers
@@ -42,7 +42,7 @@ export const validators = {
 
   hasMinimumFields: (entity: any, minFields: number): boolean => {
     return entity.fields && Array.isArray(entity.fields) && entity.fields.length >= minFields;
-  }
+  },
 };
 
 // Performance measurement utilities
@@ -54,26 +54,22 @@ export const performance = {
   },
 
   waitForStablePerformance: async (page: any, stabilityDuration: number = 2000): Promise<void> => {
-    await page.waitForFunction(
-      (duration) => {
-        return new Promise(resolve => {
-          let stable = true;
-          const checkStability = () => {
-            const now = performance.now();
-            if (stable) {
-              setTimeout(() => resolve(true), duration);
-            }
-          };
-
-          // Monitor for network activity
-          if (navigator.onLine) {
-            checkStability();
+    await page.waitForFunction(duration => {
+      return new Promise(resolve => {
+        const stable = true;
+        const checkStability = () => {
+          if (stable) {
+            setTimeout(() => resolve(true), duration);
           }
-        });
-      },
-      stabilityDuration
-    );
-  }
+        };
+
+        // Monitor for network activity
+        if (navigator.onLine) {
+          checkStability();
+        }
+      });
+    }, stabilityDuration);
+  },
 };
 
 // Component detection utilities
@@ -86,17 +82,25 @@ export const components = {
     adminDashboard: '[data-testid="admin-dashboard"]',
     entityForm: '[data-testid="entity-form"]',
     navigation: '[data-testid="navigation"]',
-    navigationLink: '[data-testid="nav-link"]'
+    navigationLink: '[data-testid="nav-link"]',
   }),
 
-  detectContext: async (page: any): Promise<'ecommerce' | 'user-management' | 'admin' | 'fallback'> => {
+  detectContext: async (
+    page: any,
+  ): Promise<'ecommerce' | 'user-management' | 'admin' | 'fallback'> => {
     const selectors = components.getComponentSelectors();
 
-    if (await page.isVisible(selectors.productCard) || await page.isVisible(selectors.shoppingCart)) {
+    if (
+      (await page.isVisible(selectors.productCard)) ||
+      (await page.isVisible(selectors.shoppingCart))
+    ) {
       return 'ecommerce';
     }
 
-    if (await page.isVisible(selectors.userProfile) || await page.isVisible(selectors.userManagementTable)) {
+    if (
+      (await page.isVisible(selectors.userProfile)) ||
+      (await page.isVisible(selectors.userManagementTable))
+    ) {
       return 'user-management';
     }
 
@@ -105,18 +109,24 @@ export const components = {
     }
 
     return 'fallback';
-  }
+  },
 };
 
 // Test reporting utilities
 export const reporting = {
-  createTestSummary: (testName: string, startTime: number, endTime: number, status: 'passed' | 'failed', details?: any) => {
+  createTestSummary: (
+    testName: string,
+    startTime: number,
+    endTime: number,
+    status: 'passed' | 'failed',
+    details?: any,
+  ) => {
     return {
       testName,
       duration: endTime - startTime,
       status,
       timestamp: new Date().toISOString(),
-      details: details || {}
+      details: details || {},
     };
   },
 
@@ -126,7 +136,7 @@ export const reporting = {
 
   logComponentDetection: (components: string[], context: string) => {
     console.log(`[COMPONENTS] Context: ${context}, Detected: ${components.join(', ')}`);
-  }
+  },
 };
 
 // Error handling utilities
@@ -148,7 +158,7 @@ export const errors = {
       requests.push({
         url: request.url(),
         method: request.method(),
-        headers: request.headers()
+        headers: request.headers(),
       });
     });
 
@@ -157,9 +167,9 @@ export const errors = {
       logs,
       requests,
       url: page.url(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-  }
+  },
 };
 
 // Accessibility testing utilities
@@ -175,7 +185,9 @@ export const accessibility = {
     }
 
     // Check for form labels
-    const inputsWithoutLabels = await page.locator('input:not([aria-label]):not([aria-labelledby])').count();
+    const inputsWithoutLabels = await page
+      .locator('input:not([aria-label]):not([aria-labelledby])')
+      .count();
     if (inputsWithoutLabels > 0) {
       issues.push(`${inputsWithoutLabels} inputs missing labels`);
     }
@@ -187,5 +199,5 @@ export const accessibility = {
     }
 
     return issues;
-  }
+  },
 };

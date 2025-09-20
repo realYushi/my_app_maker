@@ -1,5 +1,9 @@
 import { Page, Route } from '@playwright/test';
-import { mockApiResponses, createMockResponse, createErrorResponse } from '../fixtures/mock-responses';
+import {
+  mockApiResponses,
+  createMockResponse,
+  createErrorResponse,
+} from '../fixtures/mock-responses';
 
 /**
  * Utility class for mocking API responses in E2E tests
@@ -14,7 +18,7 @@ export class ApiMocker {
    */
   async setupGenerationMocks() {
     // Mock successful responses
-    await this.page.route('**/api/generate', async (route) => {
+    await this.page.route('**/api/generate', async route => {
       this.routes.push(route);
 
       const request = route.request();
@@ -23,13 +27,25 @@ export class ApiMocker {
       // Determine response based on prompt content
       const prompt = requestBody?.prompt || '';
 
-      console.log('API Mock intercepted prompt:', prompt.substring(0, 100) + '...');
+      console.log('API Mock intercepted prompt:', `${prompt.substring(0, 100)}...`);
 
-      if (prompt.includes('bookstore') || prompt.includes('e-commerce') || prompt.includes('BookHaven')) {
+      if (
+        prompt.includes('bookstore') ||
+        prompt.includes('e-commerce') ||
+        prompt.includes('BookHaven')
+      ) {
         await route.fulfill(createMockResponse(mockApiResponses.ecommerceSuccess));
-      } else if (prompt.includes('user management') || prompt.includes('CorpConnect') || prompt.includes('employee')) {
+      } else if (
+        prompt.includes('user management') ||
+        prompt.includes('CorpConnect') ||
+        prompt.includes('employee')
+      ) {
         await route.fulfill(createMockResponse(mockApiResponses.userManagementSuccess));
-      } else if (prompt.includes('admin') || prompt.includes('dashboard') || prompt.includes('CloudMetrics')) {
+      } else if (
+        prompt.includes('admin') ||
+        prompt.includes('dashboard') ||
+        prompt.includes('CloudMetrics')
+      ) {
         await route.fulfill(createMockResponse(mockApiResponses.adminSuccess));
       } else if (prompt.includes('restaurant') || prompt.includes('Bistro Deluxe')) {
         await route.fulfill(createMockResponse(mockApiResponses.restaurantSuccess));
@@ -48,7 +64,7 @@ export class ApiMocker {
    * Mock API errors for testing error handling
    */
   async mockGenerationError(errorType: 'server' | 'timeout' | 'validation' | 'ai') {
-    await this.page.route('**/api/generate', async (route) => {
+    await this.page.route('**/api/generate', async route => {
       this.routes.push(route);
 
       switch (errorType) {
@@ -72,7 +88,7 @@ export class ApiMocker {
    * Mock specific response for a given prompt
    */
   async mockSpecificResponse(promptSubstring: string, response: any, status: number = 200) {
-    await this.page.route('**/api/generate', async (route) => {
+    await this.page.route('**/api/generate', async route => {
       this.routes.push(route);
 
       const request = route.request();
@@ -96,7 +112,7 @@ export class ApiMocker {
    * Mock slow response for performance testing
    */
   async mockSlowResponse(delay: number = 5000) {
-    await this.page.route('**/api/generate', async (route) => {
+    await this.page.route('**/api/generate', async route => {
       this.routes.push(route);
       await route.fulfill(createMockResponse(mockApiResponses.ecommerceSuccess, delay));
     });

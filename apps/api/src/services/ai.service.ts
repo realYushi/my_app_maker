@@ -1,44 +1,66 @@
-import { GenerationResult } from "@mini-ai-app-builder/shared-types";
-import { config } from "../config";
-import { errorLoggingService } from "./error-logging.service";
+import { GenerationResult } from '@mini-ai-app-builder/shared-types';
+import { config } from '../config';
+import { errorLoggingService } from './error-logging.service';
 import OpenAI from 'openai';
 
+/**
+ * Custom error class for AI service operations
+ * @class AIServiceError
+ * @extends Error
+ */
 export class AIServiceError extends Error {
+  /**
+   * Creates an AIServiceError instance
+   * @param {string} message - Error message
+   * @param {number} statusCode - HTTP status code (default: 500)
+   * @param {Error} [originalError] - Original error that caused this error
+   */
   constructor(
     message: string,
     public statusCode: number = 500,
-    public originalError?: Error
+    public originalError?: Error,
   ) {
     super(message);
-    this.name = "AIServiceError";
+    this.name = 'AIServiceError';
   }
 }
 
+/**
+ * AIService - Handles AI-powered requirement extraction using OpenRouter API
+ *
+ * This service communicates with Google Gemini (via OpenRouter) to extract structured
+ * application requirements from natural language descriptions. It includes robust
+ * error handling, response validation, and fallback mock responses for testing.
+ *
+ * @class AIService
+ * @example
+ * ```typescript
+ * const aiService = new AIService();
+ * const result = await aiService.extractRequirements("Build a todo app");
+ * ```
+ */
 export class AIService {
   private readonly openai: OpenAI | null;
   private readonly model: string;
-  private readonly timeout: number;
 
   constructor() {
     // For development/testing, allow mock mode when API key is not set
-    if (!config.gemini.apiKey || config.gemini.apiKey === "test_key") {
-      console.warn("Running in mock mode - OpenRouter API key not configured");
+    if (!config.gemini.apiKey || config.gemini.apiKey === 'test_key') {
+      console.warn('Running in mock mode - OpenRouter API key not configured');
       this.openai = null;
-      this.model = "";
-      this.timeout = 5000;
+      this.model = '';
     } else {
       this.openai = new OpenAI({
         baseURL: config.gemini.baseUrl,
         apiKey: config.gemini.apiKey,
         defaultHeaders: {
-          "HTTP-Referer": "https://my-app-maker-frontend.onrender.com",
-          "X-Title": "Mini AI App Builder",
+          'HTTP-Referer': 'https://my-app-maker-frontend.onrender.com',
+          'X-Title': 'Mini AI App Builder',
         },
         // Allow custom fetch for testing
-        fetch: (global as any).fetch,
+        fetch: (global as typeof globalThis).fetch,
       });
       this.model = config.gemini.model;
-      this.timeout = config.gemini.timeout;
     }
   }
 
@@ -84,7 +106,7 @@ Respond with only the JSON object, no other text.`;
     const startTime = Date.now();
 
     if (!userText || userText.trim().length === 0) {
-      throw new AIServiceError("User text input is required", 400);
+      throw new AIServiceError('User text input is required', 400);
     }
 
     // Mock mode for testing
@@ -101,12 +123,12 @@ Respond with only the JSON object, no other text.`;
         messages: [
           {
             role: 'system',
-            content: this.getExtractionPrompt()
+            content: this.getExtractionPrompt(),
           },
           {
             role: 'user',
-            content: userText.trim()
-          }
+            content: userText.trim(),
+          },
         ],
         temperature: 0.3,
         max_tokens: 2000,
@@ -114,7 +136,7 @@ Respond with only the JSON object, no other text.`;
 
       const content = completion.choices[0]?.message?.content;
       if (!content) {
-        throw new AIServiceError("Empty response from OpenRouter API", 500);
+        throw new AIServiceError('Empty response from OpenRouter API', 500);
       }
 
       // Parse the JSON response
@@ -123,9 +145,9 @@ Respond with only the JSON object, no other text.`;
         parsedResult = JSON.parse(content.trim());
       } catch (parseError) {
         throw new AIServiceError(
-          "Invalid JSON response from OpenRouter API",
+          'Invalid JSON response from OpenRouter API',
           500,
-          parseError as Error
+          parseError as Error,
         );
       }
 
@@ -140,7 +162,7 @@ Respond with only the JSON object, no other text.`;
       // Log the error for analysis
       await errorLoggingService.logGenerationFailure({
         userInput: userText,
-        error: error instanceof Error ? error : new Error("Unknown error"),
+        error: error instanceof Error ? error : new Error('Unknown error'),
         llmResponseRaw: undefined,
       });
 
@@ -149,14 +171,10 @@ Respond with only the JSON object, no other text.`;
       }
 
       if (error instanceof Error) {
-        throw new AIServiceError(
-          `OpenRouter API request failed: ${error.message}`,
-          500,
-          error
-        );
+        throw new AIServiceError(`OpenRouter API request failed: ${error.message}`, 500, error);
       }
 
-      throw new AIServiceError("Unknown error occurred", 500);
+      throw new AIServiceError('Unknown error occurred', 500);
     }
   }
 
@@ -164,127 +182,113 @@ Respond with only the JSON object, no other text.`;
     // Generate a mock response based on the user input
     const lowerText = userText.toLowerCase();
 
-    let appName = "My App";
+    let appName = 'My App';
     let entities = [
-      { name: "User", attributes: ["id", "name", "email", "createdAt"] },
-      { name: "Item", attributes: ["id", "title", "description", "status"] },
+      { name: 'User', attributes: ['id', 'name', 'email', 'createdAt'] },
+      { name: 'Item', attributes: ['id', 'title', 'description', 'status'] },
     ];
     let userRoles = [
       {
-        name: "Admin",
-        description: "Can manage all aspects of the application",
+        name: 'Admin',
+        description: 'Can manage all aspects of the application',
       },
-      { name: "User", description: "Can interact with their own data" },
+      { name: 'User', description: 'Can interact with their own data' },
     ];
     let features = [
       {
-        name: "User Management",
-        description: "Create and manage user accounts",
+        name: 'User Management',
+        description: 'Create and manage user accounts',
       },
-      { name: "Data Management", description: "Add, edit, and delete items" },
+      { name: 'Data Management', description: 'Add, edit, and delete items' },
       {
-        name: "Authentication",
-        description: "Secure login and logout functionality",
+        name: 'Authentication',
+        description: 'Secure login and logout functionality',
       },
     ];
 
     // Customize based on common keywords
-    if (lowerText.includes("todo") || lowerText.includes("task")) {
-      appName = "Task Manager";
+    if (lowerText.includes('todo') || lowerText.includes('task')) {
+      appName = 'Task Manager';
       entities = [
-        { name: "User", attributes: ["id", "name", "email", "createdAt"] },
+        { name: 'User', attributes: ['id', 'name', 'email', 'createdAt'] },
         {
-          name: "Task",
-          attributes: [
-            "id",
-            "title",
-            "description",
-            "status",
-            "dueDate",
-            "priority",
-          ],
+          name: 'Task',
+          attributes: ['id', 'title', 'description', 'status', 'dueDate', 'priority'],
         },
         {
-          name: "Project",
-          attributes: ["id", "name", "description", "createdAt"],
+          name: 'Project',
+          attributes: ['id', 'name', 'description', 'createdAt'],
         },
       ];
       userRoles = [
-        { name: "Admin", description: "Can manage all tasks and projects" },
+        { name: 'Admin', description: 'Can manage all tasks and projects' },
         {
-          name: "User",
-          description: "Can manage their own tasks and projects",
+          name: 'User',
+          description: 'Can manage their own tasks and projects',
         },
       ];
       features = [
-        { name: "Task Creation", description: "Create and assign tasks" },
+        { name: 'Task Creation', description: 'Create and assign tasks' },
         {
-          name: "Task Management",
-          description: "Update task status and priority",
+          name: 'Task Management',
+          description: 'Update task status and priority',
         },
         {
-          name: "Project Organization",
-          description: "Group tasks into projects",
+          name: 'Project Organization',
+          description: 'Group tasks into projects',
         },
         {
-          name: "Due Date Tracking",
-          description: "Set and track task deadlines",
+          name: 'Due Date Tracking',
+          description: 'Set and track task deadlines',
         },
       ];
     } else if (
-      lowerText.includes("ecommerce") ||
-      lowerText.includes("shop") ||
-      lowerText.includes("store")
+      lowerText.includes('ecommerce') ||
+      lowerText.includes('shop') ||
+      lowerText.includes('store')
     ) {
-      appName = "E-commerce Store";
+      appName = 'E-commerce Store';
       entities = [
         {
-          name: "User",
-          attributes: ["id", "name", "email", "address", "phone"],
+          name: 'User',
+          attributes: ['id', 'name', 'email', 'address', 'phone'],
         },
         {
-          name: "Product",
-          attributes: [
-            "id",
-            "name",
-            "description",
-            "price",
-            "category",
-            "inventory",
-          ],
+          name: 'Product',
+          attributes: ['id', 'name', 'description', 'price', 'category', 'inventory'],
         },
         {
-          name: "Order",
-          attributes: ["id", "userId", "total", "status", "createdAt"],
+          name: 'Order',
+          attributes: ['id', 'userId', 'total', 'status', 'createdAt'],
         },
         {
-          name: "OrderItem",
-          attributes: ["id", "orderId", "productId", "quantity", "price"],
+          name: 'OrderItem',
+          attributes: ['id', 'orderId', 'productId', 'quantity', 'price'],
         },
       ];
       userRoles = [
         {
-          name: "Admin",
-          description: "Can manage products, orders, and users",
+          name: 'Admin',
+          description: 'Can manage products, orders, and users',
         },
         {
-          name: "Customer",
-          description: "Can browse products and place orders",
+          name: 'Customer',
+          description: 'Can browse products and place orders',
         },
       ];
       features = [
-        { name: "Product Catalog", description: "Browse and search products" },
+        { name: 'Product Catalog', description: 'Browse and search products' },
         {
-          name: "Shopping Cart",
-          description: "Add items to cart and checkout",
+          name: 'Shopping Cart',
+          description: 'Add items to cart and checkout',
         },
         {
-          name: "Order Management",
-          description: "Track order status and history",
+          name: 'Order Management',
+          description: 'Track order status and history',
         },
         {
-          name: "User Authentication",
-          description: "Secure user registration and login",
+          name: 'User Authentication',
+          description: 'Secure user registration and login',
         },
       ];
     }
@@ -297,35 +301,34 @@ Respond with only the JSON object, no other text.`;
     };
   }
 
-  private validateGenerationResult(result: any): void {
-    if (!result || typeof result !== "object") {
-      throw new AIServiceError("Invalid response structure from OpenRouter", 500);
+  private validateGenerationResult(result: unknown): void {
+    if (!result || typeof result !== 'object') {
+      throw new AIServiceError('Invalid response structure from OpenRouter', 500);
     }
 
-    const required = ["appName", "entities", "userRoles", "features"];
+    const validResult = result as Record<string, unknown>;
+
+    const required = ['appName', 'entities', 'userRoles', 'features'];
     for (const field of required) {
-      if (!(field in result)) {
+      if (!(field in validResult)) {
         throw new AIServiceError(`Missing required field: ${field}`, 500);
       }
     }
 
-    if (
-      typeof result.appName !== "string" ||
-      result.appName.trim().length === 0
-    ) {
-      throw new AIServiceError("Invalid appName in OpenRouter response", 500);
+    if (typeof validResult.appName !== 'string' || validResult.appName.trim().length === 0) {
+      throw new AIServiceError('Invalid appName in OpenRouter response', 500);
     }
 
-    if (!Array.isArray(result.entities) || result.entities.length === 0) {
-      throw new AIServiceError("Invalid entities in OpenRouter response", 500);
+    if (!Array.isArray(validResult.entities) || validResult.entities.length === 0) {
+      throw new AIServiceError('Invalid entities in OpenRouter response', 500);
     }
 
-    if (!Array.isArray(result.userRoles) || result.userRoles.length === 0) {
-      throw new AIServiceError("Invalid userRoles in OpenRouter response", 500);
+    if (!Array.isArray(validResult.userRoles) || validResult.userRoles.length === 0) {
+      throw new AIServiceError('Invalid userRoles in OpenRouter response', 500);
     }
 
-    if (!Array.isArray(result.features) || result.features.length === 0) {
-      throw new AIServiceError("Invalid features in OpenRouter response", 500);
+    if (!Array.isArray(validResult.features) || validResult.features.length === 0) {
+      throw new AIServiceError('Invalid features in OpenRouter response', 500);
     }
   }
 }

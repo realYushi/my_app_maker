@@ -1,12 +1,12 @@
-import { useAppContext } from '../../contexts/AppContext'
+import { useAppContext } from '../../hooks/useAppContext';
 
 const ErrorDisplay = () => {
-  const { error, reset } = useAppContext()
+  const { error, reset } = useAppContext();
 
-  if (!error) return null
+  if (!error) return null;
 
   return (
-    <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
       <div className="flex items-start">
         <div className="flex-shrink-0">
           <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -22,16 +22,16 @@ const ErrorDisplay = () => {
           <div className="mt-2">
             <p className="text-sm text-red-700">{error}</p>
           </div>
-          <div className="mt-4 flex flex-col sm:flex-row gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               onClick={reset}
-              className="px-4 py-2 text-sm font-medium text-red-800 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              className="rounded-md border border-red-300 bg-red-100 px-4 py-2 text-sm font-medium text-red-800 transition-colors hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               Try Again
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               Reload Page
             </button>
@@ -39,7 +39,7 @@ const ErrorDisplay = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ErrorDisplay
+export default ErrorDisplay;

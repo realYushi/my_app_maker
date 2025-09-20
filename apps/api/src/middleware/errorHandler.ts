@@ -9,7 +9,7 @@ export const errorHandler = (
   err: ApiError | AIServiceError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction,
 ): void => {
   let statusCode = 500;
   let message = 'Internal Server Error';
@@ -30,11 +30,11 @@ export const errorHandler = (
     stack: err.stack,
     path: req.path,
     method: req.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   res.status(statusCode).json({
     error: statusCode >= 500 ? 'Internal Server Error' : 'Bad Request',
-    message: statusCode >= 500 ? 'Failed to process request' : message
+    message: statusCode >= 500 ? 'Failed to process request' : message,
   });
 };

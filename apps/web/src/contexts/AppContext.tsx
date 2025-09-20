@@ -1,40 +1,39 @@
-import { createContext, useContext, useReducer, type ReactNode } from 'react'
-import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
-import { generationService } from '../services/generationService'
+import { useReducer, type ReactNode } from 'react';
+import type { GenerationResult } from '@mini-ai-app-builder/shared-types';
+import { generationService } from '../services/generationService';
+import { AppContext, type AppContextValue } from './AppContextDefinition';
 
-type AppState = 'idle' | 'loading' | 'success' | 'error'
+type AppState = 'idle' | 'loading' | 'success' | 'error';
 
 interface AppContextState {
-  status: AppState
-  userInput: string
-  generationResult: GenerationResult | null
-  error: string | null
+  status: AppState;
+  userInput: string;
+  generationResult: GenerationResult | null;
+  error: string | null;
 }
 
 interface AppContextActions {
-  setUserInput: (input: string) => void
-  setLoading: () => void
-  setSuccess: (result: GenerationResult) => void
-  setError: (error: string) => void
-  reset: () => void
-  generateApp: (description: string) => Promise<void>
+  setUserInput: (input: string) => void;
+  setLoading: () => void;
+  setSuccess: (result: GenerationResult) => void;
+  setError: (error: string) => void;
+  reset: () => void;
+  generateApp: (description: string) => Promise<void>;
 }
-
-type AppContextValue = AppContextState & AppContextActions
 
 type AppAction =
   | { type: 'SET_USER_INPUT'; payload: string }
   | { type: 'SET_LOADING' }
   | { type: 'SET_SUCCESS'; payload: GenerationResult }
   | { type: 'SET_ERROR'; payload: string }
-  | { type: 'RESET' }
+  | { type: 'RESET' };
 
 const initialState: AppContextState = {
   status: 'idle',
   userInput: '',
   generationResult: null,
-  error: null
-}
+  error: null,
+};
 
 const appReducer = (state: AppContextState, action: AppAction): AppContextState => {
   switch (action.type) {
@@ -42,43 +41,41 @@ const appReducer = (state: AppContextState, action: AppAction): AppContextState 
       return {
         ...state,
         userInput: action.payload,
-        error: null
-      }
+        error: null,
+      };
     case 'SET_LOADING':
       return {
         ...state,
         status: 'loading',
-        error: null
-      }
+        error: null,
+      };
     case 'SET_SUCCESS':
       return {
         ...state,
         status: 'success',
         generationResult: action.payload,
-        error: null
-      }
+        error: null,
+      };
     case 'SET_ERROR':
       return {
         ...state,
         status: 'error',
         error: action.payload,
-        generationResult: null
-      }
+        generationResult: null,
+      };
     case 'RESET':
-      return initialState
+      return initialState;
     default:
-      return state
+      return state;
   }
-}
-
-const AppContext = createContext<AppContextValue | undefined>(undefined)
+};
 
 interface AppProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const AppProvider = ({ children }: AppProviderProps) => {
-  const [state, dispatch] = useReducer(appReducer, initialState)
+  const [state, dispatch] = useReducer(appReducer, initialState);
 
   const actions: AppContextActions = {
     setUserInput: (input: string) => dispatch({ type: 'SET_USER_INPUT', payload: input }),
@@ -92,25 +89,17 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         const result = await generationService.generateApp(description);
         dispatch({ type: 'SET_SUCCESS', payload: result });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        const errorMessage =
+          error instanceof Error ? error.message : 'An unexpected error occurred';
         dispatch({ type: 'SET_ERROR', payload: errorMessage });
       }
-    }
-  }
+    },
+  };
 
   const value: AppContextValue = {
     ...state,
-    ...actions
-  }
+    ...actions,
+  };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAppContext = () => {
-  const context = useContext(AppContext)
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider')
-  }
-  return context
-}
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};

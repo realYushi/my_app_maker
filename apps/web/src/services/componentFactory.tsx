@@ -1,174 +1,128 @@
-import React from 'react'
-import type { Entity } from '@mini-ai-app-builder/shared-types'
-import { DomainContext, type ContextDetectionResult } from './contextDetectionService'
-import EntityForm from '../features/generation/EntityForm'
-import {
-  EcommerceProductDisplay,
-  EcommerceCartDisplay,
-  EcommerceCheckoutDisplay
-} from '../features/generation/ecommerce'
-import {
-  UserManagementDisplay,
-  UserRoleDisplay
-} from '../features/generation/user-management'
-import {
-  AdminSystemDisplay,
-  AdminReportDisplay
-} from '../features/generation/admin'
-import {
-  EcommerceOrderForm,
-  EcommerceCustomerForm
-} from './components/EcommerceComponents'
-import {
-  UserManagementUserForm,
-  UserManagementRoleForm
-} from './components/UserManagementComponents'
-import {
-  AdminSystemForm,
-  AdminReportForm
-} from './components/AdminComponents'
+import React from 'react';
+import type { Entity } from '@mini-ai-app-builder/shared-types';
+import { DomainContext, type ContextDetectionResult } from './contextDetectionService';
+import EntityForm from '../features/generation/EntityForm';
+import { domainComponentMaps } from '../config/domainComponents';
 
-// Component factory interface
+/**
+ * Component factory interface for domain-specific React components
+ * @interface DomainComponent
+ * @param {Object} props - Component properties
+ * @param {Entity} props.entity - The entity data to render
+ * @param {number} [props.tabKey] - Optional tab key for component state management
+ * @returns {React.ReactElement} Rendered React component
+ */
 export interface DomainComponent {
-  (props: { entity: Entity; tabKey?: number }): React.ReactElement
+  (props: { entity: Entity; tabKey?: number }): React.ReactElement;
 }
 
-// Registry mapping domains to React components
+/**
+ * Plugin interface for domain component registration
+ * Enables modular registration of components for specific domains
+ * @interface DomainPlugin
+ */
+export interface DomainPlugin {
+  /** The domain context this plugin handles */
+  domain: DomainContext;
+  /** Map of entity types to their corresponding components */
+  components: { [key: string]: DomainComponent };
+  /** Human-readable plugin name */
+  name: string;
+  /** Optional version string for debugging and logging */
+  version?: string;
+}
+
+/**
+ * Registry mapping domains to React components
+ * @interface ComponentRegistry
+ */
 interface ComponentRegistry {
-  [DomainContext.ECOMMERCE]: {
-    [key: string]: DomainComponent
-  }
-  [DomainContext.USER_MANAGEMENT]: {
-    [key: string]: DomainComponent
-  }
-  [DomainContext.ADMIN]: {
-    [key: string]: DomainComponent
-  }
-  [DomainContext.GENERIC]: {
-    [key: string]: DomainComponent
-  }
+  [DomainContext.ECOMMERCE]: { [key: string]: DomainComponent };
+  [DomainContext.USER_MANAGEMENT]: { [key: string]: DomainComponent };
+  [DomainContext.ADMIN]: { [key: string]: DomainComponent };
+  [DomainContext.GENERIC]: { [key: string]: DomainComponent };
 }
 
-// All domain-specific components are now imported from separate files to fix react-refresh/only-export-components
-
+/**
+ * ComponentFactory - Manages dynamic component creation based on domain context
+ *
+ * This factory provides intelligent component routing based on entity type and domain context.
+ * It supports plugin-based architecture for extending component mappings and includes
+ * performance optimizations through component caching.
+ *
+ * @class ComponentFactory
+ * @example
+ * ```typescript
+ * const component = componentFactory.getComponent(entity, contextResult);
+ * return <component entity={entity} />;
+ * ```
+ */
 class ComponentFactory {
   private registry: ComponentRegistry = {
-    [DomainContext.ECOMMERCE]: {
-      // New enhanced e-commerce components
-      'product': EcommerceProductDisplay,
-      'products': EcommerceProductDisplay,
-      'item': EcommerceProductDisplay,
-      'items': EcommerceProductDisplay,
-      'catalog': EcommerceProductDisplay,
-      'inventory': EcommerceProductDisplay,
-      'cart': EcommerceCartDisplay,
-      'basket': EcommerceCartDisplay,
-      'shopping_cart': EcommerceCartDisplay,
-      'order': EcommerceOrderForm,
-      'orders': EcommerceOrderForm,
-      'purchase': EcommerceOrderForm,
-      'checkout': EcommerceCheckoutDisplay,
-      'payment': EcommerceCheckoutDisplay,
-      'billing': EcommerceCheckoutDisplay,
-      'customer': EcommerceCustomerForm,
-      'customers': EcommerceCustomerForm,
-      'client': EcommerceCustomerForm,
-      'buyer': EcommerceCustomerForm,
-      'shopper': EcommerceCustomerForm,
-    },
-    [DomainContext.USER_MANAGEMENT]: {
-      // Enhanced user management components
-      'user': UserManagementDisplay,
-      'users': UserManagementDisplay,
-      'account': UserManagementDisplay,
-      'accounts': UserManagementDisplay,
-      'member': UserManagementDisplay,
-      'members': UserManagementDisplay,
-      'profile': UserManagementDisplay,
-      'profiles': UserManagementDisplay,
-      'directory': UserManagementDisplay,
-      'table': UserManagementDisplay,
-      'list': UserManagementDisplay,
-      'activity': UserManagementDisplay,
-      'feed': UserManagementDisplay,
-      'role': UserRoleDisplay,
-      'roles': UserRoleDisplay,
-      'permission': UserRoleDisplay,
-      'permissions': UserRoleDisplay,
-      'group': UserRoleDisplay,
-      'groups': UserRoleDisplay,
-      'team': UserRoleDisplay,
-      'teams': UserRoleDisplay,
-      // Keep backward compatibility with old form components
-      'user_form': UserManagementUserForm,
-      'role_form': UserManagementRoleForm,
-    },
-    [DomainContext.ADMIN]: {
-      // Enhanced admin components
-      'admin': AdminSystemDisplay,
-      'administrator': AdminSystemDisplay,
-      'system': AdminSystemDisplay,
-      'configuration': AdminSystemDisplay,
-      'config': AdminSystemDisplay,
-      'settings': AdminSystemDisplay,
-      'control': AdminSystemDisplay,
-      'panel': AdminSystemDisplay,
-      'dashboard': AdminSystemDisplay,
-      'overview': AdminSystemDisplay,
-      'metrics': AdminSystemDisplay,
-      'monitoring': AdminSystemDisplay,
-      'health': AdminSystemDisplay,
-      'log': AdminReportDisplay,
-      'logs': AdminReportDisplay,
-      'report': AdminReportDisplay,
-      'reports': AdminReportDisplay,
-      'analytics': AdminReportDisplay,
-      'chart': AdminReportDisplay,
-      'visualization': AdminReportDisplay,
-      'data': AdminReportDisplay,
-      // Keep backward compatibility with old form components
-      'admin_form': AdminSystemForm,
-      'report_form': AdminReportForm,
-      'monitor': AdminSystemDisplay,
-    },
-    [DomainContext.GENERIC]: {}
+    [DomainContext.ECOMMERCE]: {},
+    [DomainContext.USER_MANAGEMENT]: {},
+    [DomainContext.ADMIN]: {},
+    [DomainContext.GENERIC]: {},
+  };
+  private cache: Map<string, DomainComponent> = new Map();
+
+  /**
+   * Creates a new ComponentFactory instance and initializes the component registry
+   */
+  constructor() {
+    this.initializeRegistry();
+  }
+
+  /**
+   * Initialize the registry with domain component mappings
+   */
+  private initializeRegistry(): void {
+    // Load pre-configured domain components
+    Object.entries(domainComponentMaps).forEach(([domain, componentMap]) => {
+      this.registry[domain as DomainContext] = { ...componentMap };
+    });
   }
 
   /**
    * Routes an entity to the appropriate UI component based on context detection
    */
   getComponent(entity: Entity, contextResult: ContextDetectionResult): DomainComponent {
-    // Get the domain for this specific entity
-    const entityDomain = contextResult.entityDomainMap.get(entity.name) || DomainContext.GENERIC
+    const entityDomain = contextResult.entityDomainMap.get(entity.name) || DomainContext.GENERIC;
+    const entityName = entity.name.toLowerCase();
+    const cacheKey = `${entityDomain}:${entityName}`;
 
-    // Try to find a specific component for this entity
-    const entityName = entity.name.toLowerCase()
-    const domainRegistry = this.registry[entityDomain]
-
-    if (domainRegistry && domainRegistry[entityName]) {
-      return domainRegistry[entityName]
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
     }
 
-    // Fallback to generic EntityForm for unknown entity types
-    return ({ entity, tabKey }) => <EntityForm entity={entity} tabKey={tabKey} />
+    const domainRegistry = this.registry[entityDomain];
+    let component: DomainComponent;
+
+    if (domainRegistry && domainRegistry[entityName]) {
+      component = domainRegistry[entityName];
+    } else {
+      component = ({ entity, tabKey }) => <EntityForm entity={entity} tabKey={tabKey} />;
+    }
+
+    this.cache.set(cacheKey, component);
+    return component;
   }
 
   /**
    * Checks if a specific component exists for an entity
    */
   hasSpecificComponent(entity: Entity, contextResult: ContextDetectionResult): boolean {
-    const entityDomain = contextResult.entityDomainMap.get(entity.name) || DomainContext.GENERIC
-    const entityName = entity.name.toLowerCase()
-    const domainRegistry = this.registry[entityDomain]
-
-    return domainRegistry && !!domainRegistry[entityName]
+    const entityDomain = contextResult.entityDomainMap.get(entity.name) || DomainContext.GENERIC;
+    const entityName = entity.name.toLowerCase();
+    const domainRegistry = this.registry[entityDomain];
+    return !!(domainRegistry && domainRegistry[entityName]);
   }
 
   /**
    * Gets all available component types for a domain
    */
   getAvailableComponents(domain: DomainContext): string[] {
-    return Object.keys(this.registry[domain] || {})
+    return Object.keys(this.registry[domain] || {});
   }
 
   /**
@@ -176,9 +130,40 @@ class ComponentFactory {
    */
   registerComponent(domain: DomainContext, entityType: string, component: DomainComponent): void {
     if (!this.registry[domain]) {
-      this.registry[domain] = {}
+      this.registry[domain] = {};
     }
-    this.registry[domain][entityType.toLowerCase()] = component
+    this.registry[domain][entityType.toLowerCase()] = component;
+    // Clear cache for this domain to ensure fresh lookups
+    this.clearCacheForDomain(domain);
+  }
+
+  /**
+   * Registers a complete domain plugin with multiple components
+   */
+  registerPlugin(plugin: DomainPlugin): void {
+    if (!this.registry[plugin.domain]) {
+      this.registry[plugin.domain] = {};
+    }
+
+    // Register all components from the plugin
+    Object.entries(plugin.components).forEach(([entityType, component]) => {
+      this.registry[plugin.domain][entityType.toLowerCase()] = component;
+    });
+
+    // Clear cache for this domain
+    this.clearCacheForDomain(plugin.domain);
+
+    console.log(
+      `Registered plugin: ${plugin.name}${plugin.version ? ` v${plugin.version}` : ''} for domain ${plugin.domain}`,
+    );
+  }
+
+  /**
+   * Clears cache entries for a specific domain
+   */
+  private clearCacheForDomain(domain: DomainContext): void {
+    const keysToDelete = Array.from(this.cache.keys()).filter(key => key.startsWith(`${domain}:`));
+    keysToDelete.forEach(key => this.cache.delete(key));
   }
 
   /**
@@ -186,51 +171,64 @@ class ComponentFactory {
    */
   getTotalRegisteredComponents(): number {
     return Object.values(this.registry).reduce((total, domainRegistry) => {
-      return total + Object.keys(domainRegistry).length
-    }, 0)
+      return total + Object.keys(domainRegistry).length;
+    }, 0);
+  }
+
+  /**
+   * Verifies that components for a given domain are registered.
+   */
+  private verifyComponentsRegistered(domain: DomainContext, requiredComponents: string[]): boolean {
+    const domainRegistry = this.registry[domain];
+    if (!domainRegistry) return false;
+    return requiredComponents.every(component => component in domainRegistry);
   }
 
   /**
    * Checks if the enhanced e-commerce components are properly registered
    */
   verifyEcommerceComponentsRegistered(): boolean {
-    const ecommerceRegistry = this.registry[DomainContext.ECOMMERCE]
-    if (!ecommerceRegistry) return false
-
-    const requiredComponents = ['product', 'cart', 'checkout']
-    return requiredComponents.every(component => component in ecommerceRegistry)
+    return this.verifyComponentsRegistered(DomainContext.ECOMMERCE, [
+      'product',
+      'cart',
+      'checkout',
+    ]);
   }
 
   /**
    * Checks if the enhanced user management components are properly registered
    */
   verifyUserManagementComponentsRegistered(): boolean {
-    const userMgmtRegistry = this.registry[DomainContext.USER_MANAGEMENT]
-    if (!userMgmtRegistry) return false
-
-    const requiredComponents = ['user', 'role', 'profile', 'activity']
-    return requiredComponents.every(component => component in userMgmtRegistry)
+    return this.verifyComponentsRegistered(DomainContext.USER_MANAGEMENT, [
+      'user',
+      'role',
+      'profile',
+      'activity',
+    ]);
   }
 
   /**
    * Checks if the enhanced admin components are properly registered
    */
   verifyAdminComponentsRegistered(): boolean {
-    const adminRegistry = this.registry[DomainContext.ADMIN]
-    if (!adminRegistry) return false
-
-    const requiredComponents = ['admin', 'dashboard', 'analytics', 'system']
-    return requiredComponents.every(component => component in adminRegistry)
+    return this.verifyComponentsRegistered(DomainContext.ADMIN, [
+      'admin',
+      'dashboard',
+      'analytics',
+      'system',
+    ]);
   }
 
   /**
    * Verifies all enhanced components across all domains are properly registered
    */
   verifyAllEnhancedComponentsRegistered(): boolean {
-    return this.verifyEcommerceComponentsRegistered() &&
-           this.verifyUserManagementComponentsRegistered() &&
-           this.verifyAdminComponentsRegistered()
+    return (
+      this.verifyEcommerceComponentsRegistered() &&
+      this.verifyUserManagementComponentsRegistered() &&
+      this.verifyAdminComponentsRegistered()
+    );
   }
 }
 
-export const componentFactory = new ComponentFactory()
+export const componentFactory = new ComponentFactory();

@@ -45,9 +45,9 @@ export class GenerationPage extends BasePage {
     try {
       await Promise.race([
         this.page.waitForSelector('.mt-6.bg-white.border', { timeout: 15000 }),
-        this.page.waitForSelector('.text-red-600, .text-red-500', { timeout: 15000 })
+        this.page.waitForSelector('.text-red-600, .text-red-500', { timeout: 15000 }),
       ]);
-    } catch (error) {
+    } catch (_error) {
       // Take screenshot for debugging
       await this.page.screenshot({ path: 'debug-generation-timeout.png' });
       console.log('Current page URL:', this.page.url());
@@ -95,38 +95,50 @@ export class GenerationPage extends BasePage {
   // Component-specific getters (based on actual component structures)
   async hasProductCards(): Promise<boolean> {
     // ProductCard has distinctive "Add to Cart" button
-    return await this.isElementVisible('button:has-text("Add to Cart")') ||
-           await this.isElementVisible('.text-2xl.font-bold:has-text("$")');
+    return (
+      (await this.isElementVisible('button:has-text("Add to Cart")')) ||
+      (await this.isElementVisible('.text-2xl.font-bold:has-text("$")'))
+    );
   }
 
   async hasShoppingCart(): Promise<boolean> {
     // Look for shopping cart related elements
-    return await this.isElementVisible('button:has-text("🛒")') ||
-           await this.isElementVisible('.shopping-cart, [class*="cart"]');
+    return (
+      (await this.isElementVisible('button:has-text("🛒")')) ||
+      (await this.isElementVisible('.shopping-cart, [class*="cart"]'))
+    );
   }
 
   async hasUserProfile(): Promise<boolean> {
     // UserProfile component would have user-related form fields
-    return await this.isElementVisible('input[type="email"]') ||
-           await this.isElementVisible('.user-profile, [class*="profile"]');
+    return (
+      (await this.isElementVisible('input[type="email"]')) ||
+      (await this.isElementVisible('.user-profile, [class*="profile"]'))
+    );
   }
 
   async hasUserManagementTable(): Promise<boolean> {
     // Look for table-like structures with user data
-    return await this.isElementVisible('table') ||
-           await this.isElementVisible('.grid .border-gray-200');
+    return (
+      (await this.isElementVisible('table')) ||
+      (await this.isElementVisible('.grid .border-gray-200'))
+    );
   }
 
   async hasAdminDashboard(): Promise<boolean> {
     // Admin dashboard would have charts, metrics, or administrative elements
-    return await this.isElementVisible('.admin-dashboard, [class*="dashboard"]') ||
-           await this.isElementVisible('h2:has-text("Dashboard")');
+    return (
+      (await this.isElementVisible('.admin-dashboard, [class*="dashboard"]')) ||
+      (await this.isElementVisible('h2:has-text("Dashboard")'))
+    );
   }
 
   async hasEntityForm(): Promise<boolean> {
     // EntityForm fallback - look for generic form elements in entity grid
-    return await this.isElementVisible('.grid') &&
-           await this.isElementVisible('input, select, textarea');
+    return (
+      (await this.isElementVisible('.grid')) &&
+      (await this.isElementVisible('input, select, textarea'))
+    );
   }
 
   async getVisibleComponents(): Promise<string[]> {

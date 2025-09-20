@@ -5,13 +5,15 @@ import { databaseService } from './database.service';
 export interface ErrorLogData {
   userInput: string;
   error: Error | AIServiceError;
-  llmResponseRaw?: any;
+  llmResponseRaw?: Record<string, unknown>;
 }
 
 export class ErrorLoggingService {
   private static instance: ErrorLoggingService;
 
-  private constructor() {}
+  private constructor() {
+    // Private constructor for singleton pattern
+  }
 
   static getInstance(): ErrorLoggingService {
     if (!ErrorLoggingService.instance) {
@@ -35,17 +37,16 @@ export class ErrorLoggingService {
         userInput: data.userInput.substring(0, 10000), // Ensure max length
         errorSource,
         errorMessage: data.error.message.substring(0, 1000), // Ensure max length
-        llmResponseRaw: data.llmResponseRaw || null
+        llmResponseRaw: data.llmResponseRaw,
       };
 
       await GenerationFailure.create(failureRecord);
-
     } catch (dbError) {
       // Log to console if database logging fails
       console.error('Failed to log generation failure to database:', {
         originalError: data.error.message,
         dbError: dbError instanceof Error ? dbError.message : 'Unknown database error',
-        userInputLength: data.userInput.length
+        userInputLength: data.userInput.length,
       });
     }
   }
@@ -86,32 +87,27 @@ export class ErrorLoggingService {
         return [];
       }
 
-      return await GenerationFailure
-        .find()
-        .sort({ timestamp: -1 })
-        .limit(limit)
-        .lean()
-        .exec();
-
+      return await GenerationFailure.find().sort({ timestamp: -1 }).limit(limit).lean().exec();
     } catch (error) {
       console.error('Failed to retrieve generation failures:', error);
       return [];
     }
   }
 
-  async getFailuresBySource(errorSource: string, limit: number = 50): Promise<IGenerationFailure[]> {
+  async getFailuresBySource(
+    errorSource: string,
+    limit: number = 50,
+  ): Promise<IGenerationFailure[]> {
     try {
       if (!databaseService.isConnectionReady()) {
         return [];
       }
 
-      return await GenerationFailure
-        .find({ errorSource })
+      return await GenerationFailure.find({ errorSource })
         .sort({ timestamp: -1 })
         .limit(limit)
         .lean()
         .exec();
-
     } catch (error) {
       console.error('Failed to retrieve failures by source:', error);
       return [];

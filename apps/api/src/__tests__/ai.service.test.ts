@@ -1,5 +1,4 @@
 import { AIService, AIServiceError } from '../services/ai.service';
-import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import OpenAI from 'openai';
 
 // Mock OpenAI module
@@ -13,16 +12,16 @@ jest.mock('../config', () => ({
       apiKey: 'test-api-key',
       baseUrl: process.env.GEMINI_BASE_URL || 'https://openrouter.ai/api/v1/chat/completions',
       model: process.env.GEMINI_MODEL || 'deepseek/deepseek-chat-v3.1:free',
-      timeout: 30000
-    }
-  }
+      timeout: 30000,
+    },
+  },
 }));
 
 // Mock error logging service
 jest.mock('../services/error-logging.service', () => ({
   errorLoggingService: {
-    logGenerationFailure: jest.fn().mockResolvedValue(undefined)
-  }
+    logGenerationFailure: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 describe('AIService', () => {
@@ -34,20 +33,22 @@ describe('AIService', () => {
 
     // Setup OpenAI mock
     mockChatCompletions = {
-      create: jest.fn()
+      create: jest.fn(),
     };
 
-    MockedOpenAI.mockImplementation(() => ({
-      chat: {
-        completions: mockChatCompletions
-      }
-    } as any));
+    MockedOpenAI.mockImplementation(
+      () =>
+        ({
+          chat: {
+            completions: mockChatCompletions,
+          },
+        }) as any,
+    );
 
     aiService = new AIService();
   });
 
-  describe('Mock Mode', () => {
-  });
+  describe('Mock Mode', () => {});
 
   describe('constructor', () => {
     it('should initialize with mocked config', () => {
@@ -58,22 +59,18 @@ describe('AIService', () => {
   describe('extractRequirements', () => {
     const validUserText = 'I want to build a task management app for teams';
     const mockOpenRouterResponse = {
-      choices: [{
-        message: {
-          content: JSON.stringify({
-            appName: 'Team Task Manager',
-            entities: [
-              { name: 'Task', attributes: ['id', 'title', 'description'] }
-            ],
-            userRoles: [
-              { name: 'Manager', description: 'Manages team tasks' }
-            ],
-            features: [
-              { name: 'Task Creation', description: 'Create new tasks' }
-            ]
-          })
-        }
-      }]
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              appName: 'Team Task Manager',
+              entities: [{ name: 'Task', attributes: ['id', 'title', 'description'] }],
+              userRoles: [{ name: 'Manager', description: 'Manages team tasks' }],
+              features: [{ name: 'Task Creation', description: 'Create new tasks' }],
+            }),
+          },
+        },
+      ],
     };
 
     it('should successfully extract requirements from valid input', async () => {
@@ -83,15 +80,9 @@ describe('AIService', () => {
 
       expect(result).toEqual({
         appName: 'Team Task Manager',
-        entities: [
-          { name: 'Task', attributes: ['id', 'title', 'description'] }
-        ],
-        userRoles: [
-          { name: 'Manager', description: 'Manages team tasks' }
-        ],
-        features: [
-          { name: 'Task Creation', description: 'Create new tasks' }
-        ]
+        entities: [{ name: 'Task', attributes: ['id', 'title', 'description'] }],
+        userRoles: [{ name: 'Manager', description: 'Manages team tasks' }],
+        features: [{ name: 'Task Creation', description: 'Create new tasks' }],
       });
 
       expect(mockChatCompletions.create).toHaveBeenCalledWith(
@@ -101,22 +92,22 @@ describe('AIService', () => {
             expect.objectContaining({ role: 'system' }),
             expect.objectContaining({
               role: 'user',
-              content: validUserText.trim()
-            })
+              content: validUserText.trim(),
+            }),
           ]),
           temperature: 0.3,
           max_tokens: 2000,
-        })
+        }),
       );
     });
 
     it('should throw error for empty input', async () => {
       await expect(aiService.extractRequirements('')).rejects.toThrow(
-        new AIServiceError('User text input is required', 400)
+        new AIServiceError('User text input is required', 400),
       );
 
       await expect(aiService.extractRequirements('   ')).rejects.toThrow(
-        new AIServiceError('User text input is required', 400)
+        new AIServiceError('User text input is required', 400),
       );
     });
 
@@ -127,7 +118,7 @@ describe('AIService', () => {
       mockChatCompletions.create.mockRejectedValueOnce(apiError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('OpenRouter API request failed: Invalid API key', 500)
+        new AIServiceError('OpenRouter API request failed: Invalid API key', 500),
       );
     });
 
@@ -136,7 +127,7 @@ describe('AIService', () => {
       const originalAbortController = global.AbortController;
       global.AbortController = jest.fn().mockImplementation(() => ({
         abort: jest.fn(),
-        signal: {}
+        signal: {},
       }));
 
       const timeoutError = new Error('Request timeout');
@@ -144,7 +135,7 @@ describe('AIService', () => {
       mockChatCompletions.create.mockRejectedValueOnce(timeoutError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('OpenRouter API request failed: Request timeout', 504)
+        new AIServiceError('OpenRouter API request failed: Request timeout', 504),
       );
 
       global.AbortController = originalAbortController;
@@ -152,48 +143,52 @@ describe('AIService', () => {
 
     it('should handle invalid JSON responses', async () => {
       const invalidJsonResponse = {
-        choices: [{
-          message: {
-            content: 'Invalid JSON response from OpenRouter'
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: 'Invalid JSON response from OpenRouter',
+            },
+          },
+        ],
       };
 
       mockChatCompletions.create.mockResolvedValueOnce(invalidJsonResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid JSON response from OpenRouter API', 500)
+        new AIServiceError('Invalid JSON response from OpenRouter API', 500),
       );
     });
 
     it('should handle missing required fields in response', async () => {
       const incompleteResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              appName: 'Test App'
-              // Missing entities, userRoles, features
-            })
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                appName: 'Test App',
+                // Missing entities, userRoles, features
+              }),
+            },
+          },
+        ],
       };
 
       mockChatCompletions.create.mockResolvedValueOnce(incompleteResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Missing required field: entities', 500)
+        new AIServiceError('Missing required field: entities', 500),
       );
     });
 
     it('should handle empty response from OpenRouter', async () => {
       const emptyResponse = {
-        choices: []
+        choices: [],
       };
 
       mockChatCompletions.create.mockResolvedValueOnce(emptyResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Empty response from OpenRouter API', 500)
+        new AIServiceError('Empty response from OpenRouter API', 500),
       );
     });
 
@@ -202,28 +197,30 @@ describe('AIService', () => {
       mockChatCompletions.create.mockRejectedValueOnce(networkError);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError(`OpenRouter API request failed: ${networkError.message}`, 500)
+        new AIServiceError(`OpenRouter API request failed: ${networkError.message}`, 500),
       );
     });
 
     it('should validate response structure thoroughly', async () => {
       const invalidStructureResponse = {
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              appName: '',
-              entities: [],
-              userRoles: [],
-              features: []
-            })
-          }
-        }]
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                appName: '',
+                entities: [],
+                userRoles: [],
+                features: [],
+              }),
+            },
+          },
+        ],
       };
 
       mockChatCompletions.create.mockResolvedValueOnce(invalidStructureResponse);
 
       await expect(aiService.extractRequirements(validUserText)).rejects.toThrow(
-        new AIServiceError('Invalid appName in OpenRouter response', 500)
+        new AIServiceError('Invalid appName in OpenRouter response', 500),
       );
     });
   });

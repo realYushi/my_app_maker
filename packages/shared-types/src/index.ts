@@ -23,3 +23,6 @@ export interface GenerationResult {
   userRoles: UserRole[];
   features: Feature[];
 }
+
+// Error handling exports
+export * from './services/errorHandling';

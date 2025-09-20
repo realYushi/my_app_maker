@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
-import { config } from '../config';
 
 export class DatabaseService {
   private static instance: DatabaseService;
   private isConnected = false;
 
-  private constructor() {}
+  private constructor() {
+    // Private constructor for singleton pattern
+  }
 
   static getInstance(): DatabaseService {
     if (!DatabaseService.instance) {
@@ -20,7 +21,8 @@ export class DatabaseService {
     }
 
     try {
-      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/mini-ai-app-builder';
+      const mongoUri =
+        process.env['MONGODB_URI'] || 'mongodb://localhost:27017/mini-ai-app-builder';
       await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
@@ -28,7 +30,7 @@ export class DatabaseService {
 
       this.isConnected = true;
 
-      mongoose.connection.on('error', (error) => {
+      mongoose.connection.on('error', error => {
         console.error('MongoDB connection error:', error);
         this.isConnected = false;
       });
@@ -42,7 +44,6 @@ export class DatabaseService {
         console.log('MongoDB reconnected');
         this.isConnected = true;
       });
-
     } catch (error) {
       console.error('Failed to connect to MongoDB:', error);
       this.isConnected = false;

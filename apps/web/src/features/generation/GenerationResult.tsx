@@ -1,17 +1,17 @@
-import { useAppContext } from '../../contexts/AppContext'
-import GeneratedApp from './GeneratedApp'
-import ErrorDisplay from './ErrorDisplay'
-import { GenerationErrorBoundary } from '../../components'
+import { useAppContext } from '../../hooks/useAppContext';
+import GeneratedApp from './GeneratedApp';
+import ErrorDisplay from './ErrorDisplay';
+import { GenerationErrorBoundary } from '../../components';
 
 const GenerationResult = () => {
-  const { status, generationResult } = useAppContext()
+  const { status, generationResult } = useAppContext();
 
   if (status === 'idle' || status === 'loading') {
-    return null
+    return null;
   }
 
   if (status === 'error') {
-    return <ErrorDisplay />
+    return <ErrorDisplay />;
   }
 
   if (status === 'success' && generationResult) {
@@ -19,10 +19,10 @@ const GenerationResult = () => {
       <GenerationErrorBoundary>
         <GeneratedApp generationResult={generationResult} />
       </GenerationErrorBoundary>
-    )
+    );
   }
 
-  return null
-}
+  return null;
+};
 
-export default GenerationResult
+export default GenerationResult;
