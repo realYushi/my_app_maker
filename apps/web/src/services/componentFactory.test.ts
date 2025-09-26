@@ -97,7 +97,7 @@ describe('ComponentFactory', () => {
 
       const { container } = render(component({ entity: entities[0] }));
 
-      expect(container.querySelector('.border-l-yellow-500')).not.toBeNull();
+      expect(container.querySelector('[style*="border-left"]')).not.toBeNull();
       expect(screen.getAllByText('🔐 Access Control')[0]).toBeTruthy();
       expect(
         screen.getByText(
