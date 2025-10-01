@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "build:production": "npm install --ignore-scripts && turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
     "test:e2e": "playwright test",
@@ -22,7 +23,7 @@
     "lint:shared": "eslint packages/shared-types/src --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky install",
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
