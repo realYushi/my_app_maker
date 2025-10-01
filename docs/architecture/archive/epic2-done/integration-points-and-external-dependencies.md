@@ -2,9 +2,9 @@
 
 ## External Services
 
-| Service       | Purpose              | Integration Type | Key Files                          |
-| ------------- | -------------------- | ---------------- | ---------------------------------- |
-| Google Gemini | AI requirement extraction | REST API    | `apps/api/src/services/ai.service.ts` |
+| Service       | Purpose                   | Integration Type | Key Files                             |
+| ------------- | ------------------------- | ---------------- | ------------------------------------- |
+| Google Gemini | AI requirement extraction | REST API         | `apps/api/src/services/ai.service.ts` |
 
 ## Internal Integration Points
 

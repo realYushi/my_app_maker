@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import { aiService, AIServiceError } from '../services/ai.service';
 import { config } from '../config';
+import { logger } from '../services/logger.service';
 
 export const generateRouter = Router();
 
@@ -297,7 +298,9 @@ generateRouter.post(
       const result: GenerationResult = await aiService.extractRequirements(userText);
 
       const duration = Date.now() - startTime;
-      console.log(`Generate Route - Total request time: ${duration}ms`);
+      logger.performance('Generate Route - Total request time', duration, {
+        endpoint: '/api/generate',
+      });
 
       return res.status(200).json(result);
     } catch (error) {

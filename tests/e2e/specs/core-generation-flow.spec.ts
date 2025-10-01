@@ -171,7 +171,7 @@ test.describe('Core Generation Flow E2E Tests', () => {
       const detailedPrompts = [
         testFixtures.ecommerce.detailedPrompt,
         testFixtures.userManagement.detailedPrompt,
-        testFixtures.admin.detailedPrompt
+        testFixtures.admin.detailedPrompt,
       ];
 
       for (const prompt of detailedPrompts) {
@@ -185,11 +185,7 @@ test.describe('Core Generation Flow E2E Tests', () => {
     test('should fail gracefully with simple prompts', async () => {
       await apiMocker.setupGenerationMocks();
 
-      const simplePrompts = [
-        'Make an online store',
-        'Create user management',
-        'Build admin panel'
-      ];
+      const simplePrompts = ['Make an online store', 'Create user management', 'Build admin panel'];
 
       for (const prompt of simplePrompts) {
         await generationPage.goto(); // Reset page
@@ -247,7 +243,7 @@ test.describe('Core Generation Flow E2E Tests', () => {
       const contexts = [
         { fixture: testFixtures.ecommerce, expectedLinks: ['Products', 'Cart'] },
         { fixture: testFixtures.userManagement, expectedLinks: ['Employees'] },
-        { fixture: testFixtures.admin, expectedLinks: ['Dashboard'] }
+        { fixture: testFixtures.admin, expectedLinks: ['Dashboard'] },
       ];
 
       for (const context of contexts) {
@@ -262,7 +258,7 @@ test.describe('Core Generation Flow E2E Tests', () => {
 
         // Verify at least some expected links are present
         const hasExpectedLinks = context.expectedLinks.some(link =>
-          navLinks.some(navLink => navLink.includes(link))
+          navLinks.some(navLink => navLink.includes(link)),
         );
         expect(hasExpectedLinks).toBe(true);
       }

@@ -12,6 +12,6 @@ This is a greenfield project with no pre-existing codebase or mandated starter t
 
 ## Change Log
 
-| Date       | Version | Description                              | Author            |
-| :--------- | :------ | :--------------------------------------- | :---------------- |
+| Date       | Version | Description                                 | Author              |
+| :--------- | :------ | :------------------------------------------ | :------------------ |
 | 2025-09-14 | 0.1     | Initial draft of the architecture document. | Winston (Architect) |

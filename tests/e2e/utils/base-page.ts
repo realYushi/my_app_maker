@@ -42,7 +42,7 @@ export class BasePage {
   }
 
   async getText(selector: string): Promise<string> {
-    return await this.page.textContent(selector) || '';
+    return (await this.page.textContent(selector)) || '';
   }
 
   async clickElement(selector: string) {

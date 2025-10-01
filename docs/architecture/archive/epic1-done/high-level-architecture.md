@@ -8,22 +8,22 @@ The "Mini AI App Builder" will be a modern fullstack application featuring a mon
 
 We will use Render as the primary cloud platform. It provides a seamless developer experience for deploying fullstack applications and meets the PRD's requirement for a provider with a generous free tier.
 
-*   **Platform:** Render
-*   **Key Services:**
-    *   **Render Web Service:** Two services will be used; one for hosting the static React frontend and another for the Node.js backend API.
-    *   **Render MongoDB:** A managed MongoDB instance for any data persistence needs.
-    *   **Render Environment Groups:** To share environment variables securely between the frontend and backend services.
-*   **Deployment Host and Regions:** Services will be deployed to a US region (e.g., `Oregon (US West)` or `Ohio (US East)`).
+- **Platform:** Render
+- **Key Services:**
+  - **Render Web Service:** Two services will be used; one for hosting the static React frontend and another for the Node.js backend API.
+  - **Render MongoDB:** A managed MongoDB instance for any data persistence needs.
+  - **Render Environment Groups:** To share environment variables securely between the frontend and backend services.
+- **Deployment Host and Regions:** Services will be deployed to a US region (e.g., `Oregon (US West)` or `Ohio (US East)`).
 
 ## Repository Structure
 
 We will adopt a monorepo structure, managed with Turborepo and npm workspaces.
 
-*   **Structure:** Monorepo
-*   **Monorepo Tool:** **Turborepo** on top of **npm workspaces**.
-*   **Package Organization:**
-    *   `apps/`: Will contain the deployable applications (`web` for the frontend, `api` for the backend).
-    *   `packages/`: Will contain shared code, such as TypeScript types, shared configurations, and potentially a shared UI component library.
+- **Structure:** Monorepo
+- **Monorepo Tool:** **Turborepo** on top of **npm workspaces**.
+- **Package Organization:**
+  - `apps/`: Will contain the deployable applications (`web` for the frontend, `api` for the backend).
+  - `packages/`: Will contain shared code, such as TypeScript types, shared configurations, and potentially a shared UI component library.
 
 ## High Level Architecture Diagram
 
@@ -51,8 +51,8 @@ graph TD
 
 ## Architectural Patterns
 
-*   **Monolith (Backend):** The backend will be a single, unified service for simplicity and speed.
-*   **Single-Page Application (SPA):** The frontend will be a client-side rendered React application for a fluid user experience.
-*   **Monorepo:** All code will reside in a single repository to facilitate code sharing and streamlined builds.
-*   **Repository Pattern (Backend):** Database logic will be abstracted from business logic to decouple the application from the data source.
-*   **Utility-First CSS:** Using Tailwind CSS for all styling as required by the `front-end-spec.md`.
+- **Monolith (Backend):** The backend will be a single, unified service for simplicity and speed.
+- **Single-Page Application (SPA):** The frontend will be a client-side rendered React application for a fluid user experience.
+- **Monorepo:** All code will reside in a single repository to facilitate code sharing and streamlined builds.
+- **Repository Pattern (Backend):** Database logic will be abstracted from business logic to decouple the application from the data source.
+- **Utility-First CSS:** Using Tailwind CSS for all styling as required by the `front-end-spec.md`.

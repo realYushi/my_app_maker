@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { logger } from './logger.service';
 
 export class DatabaseService {
   private static instance: DatabaseService;
@@ -41,7 +42,7 @@ export class DatabaseService {
       });
 
       mongoose.connection.on('reconnected', () => {
-        console.log('MongoDB reconnected');
+        logger.info('MongoDB reconnected', { event: 'database-reconnected' });
         this.isConnected = true;
       });
     } catch (error) {

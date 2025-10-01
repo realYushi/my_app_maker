@@ -78,6 +78,7 @@ Transform the basic form-only UI generation into a context-aware system that pro
 **System State**: Production-ready MVP with 81 comprehensive tests, complete AI-to-UI pipeline operational
 
 **Technical Foundation**:
+
 - **Monorepo**: npm workspaces with Turbo build orchestration
 - **Backend**: Express server on port 3001 with Google Gemini AI integration
 - **Frontend**: React 18/TypeScript on port 5173 with Vite, Tailwind CSS 3.4.0, Headless UI
@@ -85,6 +86,7 @@ Transform the basic form-only UI generation into a context-aware system that pro
 - **E2E Infrastructure**: Playwright MCP browser automation ready for complete user flow testing
 
 **Integration Points**:
+
 - **Primary**: `apps/web/src/features/generation/GeneratedApp.tsx` (UI orchestration)
 - **Secondary**: `apps/web/src/features/generation/EntityForm.tsx` (smart form generation with input type detection)
 - **Service Layer**: `apps/web/src/services/generationService.ts` (API abstraction)

@@ -1,6 +1,7 @@
 # Development Commands - Mini AI App Builder
 
 ## Project Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -13,6 +14,7 @@ npm run build
 ```
 
 ## Frontend Commands (apps/web)
+
 ```bash
 # Start frontend development server
 cd apps/web && npm run dev
@@ -37,6 +39,7 @@ cd apps/web && npm run preview
 ```
 
 ## Backend Commands (apps/api)
+
 ```bash
 # Start API development server
 cd apps/api && npm run dev
@@ -55,6 +58,7 @@ cd apps/api && npm run test:watch
 ```
 
 ## E2E Testing
+
 ```bash
 # Run all E2E tests
 npm run test:e2e
@@ -67,6 +71,7 @@ npm run test:e2e:headed
 ```
 
 ## Turbo Monorepo Commands
+
 ```bash
 # Run command across all packages
 npm run lint     # Lint all packages
@@ -75,6 +80,7 @@ npm run build    # Build all packages
 ```
 
 ## Git Commands
+
 ```bash
 # Standard git operations
 git status
@@ -90,6 +96,7 @@ git checkout -b feature/new-feature
 ```
 
 ## File System Commands (Darwin/macOS)
+
 ```bash
 # List files and directories
 ls -la
@@ -107,6 +114,7 @@ rm -rf packages/*/node_modules
 ```
 
 ## Docker Commands (if needed)
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build

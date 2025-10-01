@@ -8,6 +8,6 @@ Comprehensive documentation of the entire system as implemented after Epic 1: Co
 
 ## Change Log
 
-| Date       | Version | Description                      | Author    |
-| ---------- | ------- | -------------------------------- | --------- |
-| 2025-09-15 | 1.0     | Initial brownfield analysis      | Winston   |
+| Date       | Version | Description                 | Author  |
+| ---------- | ------- | --------------------------- | ------- |
+| 2025-09-15 | 1.0     | Initial brownfield analysis | Winston |

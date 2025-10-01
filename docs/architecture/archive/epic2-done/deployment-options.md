@@ -30,11 +30,13 @@ npm run dev
 ### Quick Cloud Deployment (Render Free Tier)
 
 **Prerequisites:**
+
 - GitHub repository with your code
 - Google AI API key (free tier available)
 - Render account (free)
 
 **Step 1: Backend Deployment**
+
 1. **Create Web Service** on Render
 2. **Connect GitHub repository**
 3. **Configure build settings:**
@@ -51,6 +53,7 @@ npm run dev
    ```
 
 **Step 2: Frontend Deployment**
+
 1. **Create Static Site** on Render
 2. **Connect GitHub repository**
 3. **Configure build settings:**
@@ -64,6 +67,7 @@ npm run dev
    ```
 
 **Step 3: Test Deployment**
+
 1. **Visit your frontend URL**
 2. **Test the generation flow:**
    - Enter: "I want a blog app with posts and comments"
@@ -84,6 +88,7 @@ npm run dev
 **Purpose:** Full-featured deployment for portfolio demonstration and CV showcase
 
 **Features Include:**
+
 - MongoDB Atlas integration for data persistence
 - Comprehensive monitoring and health checks
 - Advanced CORS and security configuration
@@ -94,6 +99,7 @@ npm run dev
 **Documentation:** See `docs/architecture/render-deployment-guide.md` for complete production setup
 
 **Additional Components:**
+
 - Database persistence layer
 - User session management (Epic 2)
 - Advanced UI generation features
@@ -102,19 +108,20 @@ npm run dev
 
 ## Deployment Comparison
 
-| Feature | Simple Evaluation | Production Portfolio |
-|---------|------------------|---------------------|
-| **Setup Time** | 15 minutes | 2-3 hours |
-| **Cost** | Free | Free tier + minimal |
-| **Database** | None (evaluation) | MongoDB Atlas |
+| Feature        | Simple Evaluation  | Production Portfolio  |
+| -------------- | ------------------ | --------------------- |
+| **Setup Time** | 15 minutes         | 2-3 hours             |
+| **Cost**       | Free               | Free tier + minimal   |
+| **Database**   | None (evaluation)  | MongoDB Atlas         |
 | **Monitoring** | Basic health check | Full monitoring suite |
-| **Security** | Basic CORS | Production security |
-| **Features** | Core functionality | All Epic 1 + Epic 2 |
-| **Use Case** | Intern evaluation | CV/Portfolio demo |
+| **Security**   | Basic CORS         | Production security   |
+| **Features**   | Core functionality | All Epic 1 + Epic 2   |
+| **Use Case**   | Intern evaluation  | CV/Portfolio demo     |
 
 ## Environment Variables Reference
 
 ### Required for Both Deployments
+
 ```bash
 # Core Application
 NODE_ENV=production
@@ -130,6 +137,7 @@ VITE_API_URL=https://your-backend-service.onrender.com
 ```
 
 ### Additional for Production Portfolio
+
 ```bash
 # Database (Epic 2)
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
@@ -146,6 +154,7 @@ ERROR_REPORTING_ENABLED=true
 ## Troubleshooting Common Issues
 
 ### Build Failures
+
 ```bash
 # Local debugging
 npm run build:api
@@ -156,15 +165,18 @@ npm install
 ```
 
 ### CORS Errors
+
 - Verify `CORS_ALLOWED_ORIGINS` includes your frontend URL
 - Check that frontend `VITE_API_URL` matches backend URL
 
 ### API Connection Issues
+
 - Verify backend service is running
 - Check environment variables are set correctly
 - Test health endpoint: `https://your-api.onrender.com/api/health`
 
 ### AI Integration Failures
+
 - Verify `GEMINI_API_KEY` is valid and active
 - Check API quota/rate limits
 - Test with curl: `curl -H "Authorization: Bearer $GEMINI_API_KEY" $GEMINI_BASE_URL/models`
@@ -172,6 +184,7 @@ npm install
 ## Success Metrics
 
 ### Evaluation Deployment Success
+
 - [ ] **Page Load:** <3 seconds
 - [ ] **AI Response:** <10 seconds
 - [ ] **Mobile Compatible:** Responsive design
@@ -179,6 +192,7 @@ npm install
 - [ ] **Functional:** Complete user flow works
 
 ### Portfolio Deployment Success
+
 - [ ] **Performance:** Lighthouse score >90
 - [ ] **Uptime:** >99% availability
 - [ ] **Scalability:** Handles concurrent users

@@ -1,23 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
 interface FilterOption {
-  id: string
-  label: string
-  count?: number
+  id: string;
+  label: string;
+  count?: number;
 }
 
 interface ProductFiltersProps {
-  onFilterChange?: (filters: FilterState) => void
-  categories?: FilterOption[]
-  brands?: FilterOption[]
+  onFilterChange?: (filters: FilterState) => void;
+  categories?: FilterOption[];
+  brands?: FilterOption[];
 }
 
 interface FilterState {
-  categories: string[]
-  priceRange: [number, number]
-  rating: number
-  brands: string[]
-  inStock: boolean
+  categories: string[];
+  priceRange: [number, number];
+  rating: number;
+  brands: string[];
+  inStock: boolean;
 }
 
 const ProductFilters: React.FC<ProductFiltersProps> = ({
@@ -27,44 +27,44 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     { id: 'clothing', label: 'Clothing', count: 32 },
     { id: 'books', label: 'Books', count: 28 },
     { id: 'home', label: 'Home & Garden', count: 19 },
-    { id: 'sports', label: 'Sports', count: 15 }
+    { id: 'sports', label: 'Sports', count: 15 },
   ],
   brands = [
     { id: 'apple', label: 'Apple', count: 12 },
     { id: 'samsung', label: 'Samsung', count: 8 },
     { id: 'nike', label: 'Nike', count: 15 },
-    { id: 'adidas', label: 'Adidas', count: 11 }
-  ]
+    { id: 'adidas', label: 'Adidas', count: 11 },
+  ],
 }) => {
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     priceRange: [0, 1000],
     rating: 0,
     brands: [],
-    inStock: false
-  })
+    inStock: false,
+  });
 
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters }
-    setFilters(updatedFilters)
-    onFilterChange?.(updatedFilters)
-  }
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
+    onFilterChange?.(updatedFilters);
+  };
 
   const toggleCategory = (categoryId: string) => {
     const newCategories = filters.categories.includes(categoryId)
       ? filters.categories.filter(id => id !== categoryId)
-      : [...filters.categories, categoryId]
-    handleFilterChange({ categories: newCategories })
-  }
+      : [...filters.categories, categoryId];
+    handleFilterChange({ categories: newCategories });
+  };
 
   const toggleBrand = (brandId: string) => {
     const newBrands = filters.brands.includes(brandId)
       ? filters.brands.filter(id => id !== brandId)
-      : [...filters.brands, brandId]
-    handleFilterChange({ brands: newBrands })
-  }
+      : [...filters.brands, brandId];
+    handleFilterChange({ brands: newBrands });
+  };
 
   const clearAllFilters = () => {
     const clearedFilters = {
@@ -72,11 +72,11 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       priceRange: [0, 1000] as [number, number],
       rating: 0,
       brands: [],
-      inStock: false
-    }
-    setFilters(clearedFilters)
-    onFilterChange?.(clearedFilters)
-  }
+      inStock: false,
+    };
+    setFilters(clearedFilters);
+    onFilterChange?.(clearedFilters);
+  };
 
   const hasActiveFilters =
     filters.categories.length > 0 ||
@@ -84,19 +84,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     filters.rating > 0 ||
     filters.inStock ||
     filters.priceRange[0] > 0 ||
-    filters.priceRange[1] < 1000
+    filters.priceRange[1] < 1000;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className="rounded-lg border border-gray-200 bg-white">
       {/* Mobile Filter Toggle */}
-      <div className="lg:hidden border-b border-gray-200 p-4">
+      <div className="border-b border-gray-200 p-4 lg:hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center justify-between w-full text-left"
+          className="flex w-full items-center justify-between text-left"
         >
           <span className="font-medium text-gray-900">Filters</span>
           <svg
-            className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -108,7 +108,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
       {/* Filters Content */}
       <div className={`lg:block ${isExpanded ? 'block' : 'hidden'}`}>
-        <div className="p-4 space-y-6">
+        <div className="space-y-6 p-4">
           {/* Clear Filters */}
           {hasActiveFilters && (
             <div className="flex items-center justify-between">
@@ -124,19 +124,17 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Categories */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">Categories</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Categories</h3>
             <div className="space-y-2">
-              {categories.map((category) => (
+              {categories.map(category => (
                 <label key={category.id} className="flex items-center">
                   <input
                     type="checkbox"
                     checked={filters.categories.includes(category.id)}
                     onChange={() => toggleCategory(category.id)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-3 text-sm text-gray-700 flex-1">
-                    {category.label}
-                  </span>
+                  <span className="ml-3 flex-1 text-sm text-gray-700">{category.label}</span>
                   {category.count && (
                     <span className="text-xs text-gray-500">({category.count})</span>
                   )}
@@ -147,27 +145,31 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Price Range */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">Price Range</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Price Range</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <input
                   type="number"
                   placeholder="Min"
                   value={filters.priceRange[0]}
-                  onChange={(e) => handleFilterChange({
-                    priceRange: [Number(e.target.value), filters.priceRange[1]]
-                  })}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                  onChange={e =>
+                    handleFilterChange({
+                      priceRange: [Number(e.target.value), filters.priceRange[1]],
+                    })
+                  }
+                  className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
                 />
                 <span className="text-gray-500">to</span>
                 <input
                   type="number"
                   placeholder="Max"
                   value={filters.priceRange[1]}
-                  onChange={(e) => handleFilterChange({
-                    priceRange: [filters.priceRange[0], Number(e.target.value)]
-                  })}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                  onChange={e =>
+                    handleFilterChange({
+                      priceRange: [filters.priceRange[0], Number(e.target.value)],
+                    })
+                  }
+                  className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
                 />
               </div>
               <div className="text-xs text-gray-500">
@@ -178,20 +180,21 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Rating */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">Customer Rating</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Customer Rating</h3>
             <div className="space-y-2">
-              {[4, 3, 2, 1].map((rating) => (
+              {[4, 3, 2, 1].map(rating => (
                 <label key={rating} className="flex items-center">
                   <input
                     type="radio"
                     name="rating"
                     checked={filters.rating === rating}
                     onChange={() => handleFilterChange({ rating })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="ml-3 flex items-center">
                     <span className="text-yellow-400">
-                      {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+                      {'★'.repeat(rating)}
+                      {'☆'.repeat(5 - rating)}
                     </span>
                     <span className="ml-1 text-sm text-gray-700">& up</span>
                   </span>
@@ -202,22 +205,18 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Brands */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">Brands</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Brands</h3>
             <div className="space-y-2">
-              {brands.map((brand) => (
+              {brands.map(brand => (
                 <label key={brand.id} className="flex items-center">
                   <input
                     type="checkbox"
                     checked={filters.brands.includes(brand.id)}
                     onChange={() => toggleBrand(brand.id)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-3 text-sm text-gray-700 flex-1">
-                    {brand.label}
-                  </span>
-                  {brand.count && (
-                    <span className="text-xs text-gray-500">({brand.count})</span>
-                  )}
+                  <span className="ml-3 flex-1 text-sm text-gray-700">{brand.label}</span>
+                  {brand.count && <span className="text-xs text-gray-500">({brand.count})</span>}
                 </label>
               ))}
             </div>
@@ -225,13 +224,13 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Availability */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-3">Availability</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Availability</h3>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filters.inStock}
-                onChange={(e) => handleFilterChange({ inStock: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                onChange={e => handleFilterChange({ inStock: e.target.checked })}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="ml-3 text-sm text-gray-700">In stock only</span>
             </label>
@@ -239,7 +238,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductFilters
+export default ProductFilters;

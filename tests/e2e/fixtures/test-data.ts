@@ -25,7 +25,7 @@ The platform should have a modern, book-focused design with categories for Ficti
       { name: 'book', type: 'product' },
       { name: 'order', type: 'transaction' },
       { name: 'customer', type: 'user' },
-      { name: 'cart', type: 'container' }
+      { name: 'cart', type: 'container' },
     ],
 
     expectedComponents: ['ProductCard', 'ShoppingCart'],
@@ -35,17 +35,17 @@ The platform should have a modern, book-focused design with categories for Ficti
         {
           name: 'book',
           fields: ['title', 'author', 'price', 'isbn', 'genre', 'stock'],
-          type: 'product'
+          type: 'product',
         },
         {
           name: 'order',
           fields: ['id', 'customerId', 'total', 'items', 'status'],
-          type: 'transaction'
-        }
+          type: 'transaction',
+        },
       ],
       roles: ['customer', 'store_manager', 'admin'],
-      features: ['product_catalog', 'shopping_cart', 'user_accounts']
-    }
+      features: ['product_catalog', 'shopping_cart', 'user_accounts'],
+    },
   },
 
   // User management test data
@@ -74,7 +74,7 @@ The system should support multiple departments like Engineering, Sales, Marketin
     expectedEntities: [
       { name: 'employee', type: 'user' },
       { name: 'department', type: 'organization' },
-      { name: 'role', type: 'permission' }
+      { name: 'role', type: 'permission' },
     ],
 
     expectedComponents: ['UserProfile', 'UserManagementTable'],
@@ -84,17 +84,17 @@ The system should support multiple departments like Engineering, Sales, Marketin
         {
           name: 'employee',
           fields: ['name', 'email', 'department', 'role', 'skills'],
-          type: 'user'
+          type: 'user',
         },
         {
           name: 'department',
           fields: ['name', 'manager', 'budget', 'members'],
-          type: 'organization'
-        }
+          type: 'organization',
+        },
       ],
       roles: ['employee', 'manager', 'hr', 'admin'],
-      features: ['user_profiles', 'department_management', 'role_permissions']
-    }
+      features: ['user_profiles', 'department_management', 'role_permissions'],
+    },
   },
 
   // Admin dashboard test data
@@ -123,7 +123,7 @@ The dashboard should display real-time metrics, charts, and provide comprehensiv
     expectedEntities: [
       { name: 'metric', type: 'analytics' },
       { name: 'user_activity', type: 'log' },
-      { name: 'system_config', type: 'setting' }
+      { name: 'system_config', type: 'setting' },
     ],
 
     expectedComponents: ['AdminDashboard'],
@@ -133,17 +133,17 @@ The dashboard should display real-time metrics, charts, and provide comprehensiv
         {
           name: 'metric',
           fields: ['name', 'value', 'timestamp', 'category'],
-          type: 'analytics'
+          type: 'analytics',
         },
         {
           name: 'user_activity',
           fields: ['userId', 'action', 'timestamp', 'details'],
-          type: 'log'
-        }
+          type: 'log',
+        },
       ],
       roles: ['support_agent', 'system_admin', 'finance_manager', 'security_officer'],
-      features: ['analytics_dashboard', 'user_monitoring', 'system_configuration']
-    }
+      features: ['analytics_dashboard', 'user_monitoring', 'system_configuration'],
+    },
   },
 
   // Restaurant management (from QA validation)
@@ -171,9 +171,9 @@ The system should handle peak dining hours efficiently and provide real-time kit
     expectedEntities: [
       { name: 'dish', type: 'product' },
       { name: 'reservation', type: 'booking' },
-      { name: 'order', type: 'transaction' }
-    ]
-  }
+      { name: 'order', type: 'transaction' },
+    ],
+  },
 };
 
 // Helper functions for test data

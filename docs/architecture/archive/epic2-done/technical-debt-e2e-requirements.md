@@ -9,10 +9,12 @@
 ### 🚨 Critical Technical Debt
 
 #### 1. Database Infrastructure (Intentionally Disabled)
+
 **Location**: `apps/api/src/index.ts` lines 34-46
 **Status**: Production-ready code exists but commented out
 **Impact**: No data persistence for generated apps
 **Epic 2 Action Required**:
+
 ```typescript
 // Currently disabled:
 // await databaseService.connect();
@@ -22,17 +24,21 @@ await databaseService.connect();
 ```
 
 #### 2. CORS Configuration (Development Only)
+
 **Location**: `apps/api/src/index.ts` lines 13-26
 **Current State**: Allows all origins (`"*"`)
 **Epic 2 Action Required**:
+
 ```typescript
 // Replace development CORS with production config
-res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
 ```
 
 #### 3. Environment Configuration
+
 **Missing**: Production environment variable validation
 **Epic 2 Requirements**:
+
 - Validate required environment variables on startup
 - Create `.env.production` template
 - Add environment-specific configurations
@@ -40,17 +46,20 @@ res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 ### ⚠️ Medium Priority Technical Debt
 
 #### 4. Error Handling Granularity
+
 **Location**: `apps/api/src/services/ai.service.ts`
 **Issue**: Generic error messages for production security
 **Impact**: Harder debugging in production
 **Recommendation**: Implement structured error codes
 
 #### 5. Type Safety Gaps
+
 **Location**: Various API response handling
 **Issue**: Some `any` types in error handling paths
 **Impact**: Potential runtime type errors
 
 #### 6. Frontend Service Layer
+
 **Location**: `apps/web/src/services/generationService.ts`
 **Issue**: Direct fetch calls without retry logic
 **Impact**: Network instability handling
@@ -60,6 +69,7 @@ res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
 ### 🎯 Core User Journey Tests
 
 #### Primary Flow: Text-to-UI Generation
+
 ```gherkin
 Scenario: User generates app from description
   Given user is on the homepage
@@ -73,6 +83,7 @@ Scenario: User generates app from description
 ```
 
 #### Error Handling Flows
+
 ```gherkin
 Scenario: Empty input validation
   Given user is on the homepage
@@ -90,6 +101,7 @@ Scenario: API error handling
 ### 🔧 Playwright Setup Requirements
 
 #### Installation & Configuration
+
 ```bash
 # Epic 2 Setup Commands
 npm install --save-dev @playwright/test
@@ -97,6 +109,7 @@ npx playwright install
 ```
 
 #### Test Structure Needed
+
 ```
 apps/web/
 ├── e2e/
@@ -112,6 +125,7 @@ apps/web/
 ```
 
 #### Configuration File Needed
+
 ```typescript
 // playwright.config.ts
 export default defineConfig({
@@ -141,6 +155,7 @@ export default defineConfig({
 ### 🧪 Test Coverage Requirements
 
 #### Must-Have Test Cases
+
 1. **Complete User Journey**: Text input → API call → UI generation
 2. **Form Interactions**: Generated forms should be functional
 3. **Navigation**: Dynamic tabs/menus work correctly
@@ -149,6 +164,7 @@ export default defineConfig({
 6. **Loading States**: All loading indicators function properly
 
 #### Should-Have Test Cases
+
 1. **Accessibility**: Screen reader compatibility
 2. **Performance**: Page load times under 3 seconds
 3. **Cross-Browser**: Chrome, Firefox, Safari compatibility
@@ -159,8 +175,10 @@ export default defineConfig({
 ### 🚀 Deployment Configuration Needed
 
 #### 1. Build Scripts Update
+
 **Current**: Development-focused scripts
 **Epic 2 Needed**:
+
 ```json
 {
   "scripts": {
@@ -172,6 +190,7 @@ export default defineConfig({
 ```
 
 #### 2. Environment Variables for Render
+
 ```bash
 # Required for production
 NODE_ENV=production
@@ -182,25 +201,29 @@ PORT=<render_assigned_port>
 ```
 
 #### 3. Render Service Configuration
+
 **API Service**:
+
 - Build Command: `npm install && npm run build`
 - Start Command: `npm run start:production`
 - Environment: Node.js 18+
 
 **Web Service**:
+
 - Build Command: `npm install && npm run build`
 - Publish Directory: `apps/web/dist`
 - Environment: Static Site
 
 #### 4. Database Activation Checklist
+
 ```typescript
 // Epic 2: Enable in apps/api/src/index.ts
 async function initializeDatabase(): Promise<void> {
   try {
     await databaseService.connect();
-    console.log("Connected to MongoDB");
+    console.log('Connected to MongoDB');
   } catch (error) {
-    console.error("Database connection failed:", error);
+    console.error('Database connection failed:', error);
     process.exit(1); // Fail fast in production
   }
 }
@@ -209,27 +232,24 @@ async function initializeDatabase(): Promise<void> {
 ### 🔒 Security Considerations for Production
 
 #### CORS Update Required
+
 ```typescript
 // Replace development CORS
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://your-app.onrender.com'
-];
+const allowedOrigins = [process.env.FRONTEND_URL, 'https://your-app.onrender.com'];
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  }),
+);
 ```
 
 #### Environment Variable Validation
+
 ```typescript
 // Add to config/index.ts
-const requiredEnvVars = [
-  'GEMINI_API_KEY',
-  'MONGODB_URI',
-  'FRONTEND_URL'
-];
+const requiredEnvVars = ['GEMINI_API_KEY', 'MONGODB_URI', 'FRONTEND_URL'];
 
 requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
@@ -241,17 +261,20 @@ requiredEnvVars.forEach(envVar => {
 ## Epic 2 Implementation Priority
 
 ### Phase 1: Testing Infrastructure
+
 1. ✅ Playwright setup and configuration
 2. ✅ Core user journey E2E tests
 3. ✅ CI/CD integration for test runs
 
 ### Phase 2: Production Readiness
+
 1. ✅ Database connection activation
 2. ✅ CORS and security configuration
 3. ✅ Environment variable validation
 4. ✅ Render deployment configuration
 
 ### Phase 3: Enhanced Error Handling
+
 1. ✅ Structured error codes
 2. ✅ Production-safe error messages
 3. ✅ Monitoring and logging improvements
@@ -259,12 +282,14 @@ requiredEnvVars.forEach(envVar => {
 ## Success Metrics
 
 ### Testing Goals
+
 - **E2E Test Coverage**: 100% of primary user journeys
 - **Cross-Browser Support**: Chrome, Firefox, Safari
 - **Mobile Compatibility**: Responsive design validation
 - **CI/CD Integration**: Automated test runs on deployment
 
 ### Deployment Goals
+
 - **Zero-Downtime Deployment**: Render CI/CD pipeline
 - **Database Persistence**: User-generated apps saved
 - **Production Performance**: <3 second load times

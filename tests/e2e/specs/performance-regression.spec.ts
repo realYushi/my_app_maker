@@ -47,7 +47,7 @@ test.describe('Performance & Regression Testing', () => {
       const contexts = [
         { name: 'E-commerce', prompt: testFixtures.ecommerce.detailedPrompt },
         { name: 'User Management', prompt: testFixtures.userManagement.detailedPrompt },
-        { name: 'Admin Dashboard', prompt: testFixtures.admin.detailedPrompt }
+        { name: 'Admin Dashboard', prompt: testFixtures.admin.detailedPrompt },
       ];
 
       const results: { name: string; duration: number }[] = [];
@@ -85,7 +85,7 @@ test.describe('Performance & Regression Testing', () => {
       const contexts = await Promise.all([
         browser.newContext(),
         browser.newContext(),
-        browser.newContext()
+        browser.newContext(),
       ]);
 
       const pages = await Promise.all(contexts.map(ctx => ctx.newPage()));
@@ -236,10 +236,11 @@ test.describe('Performance & Regression Testing', () => {
       });
 
       // Memory-related errors should be minimal
-      const memoryErrors = errors.filter(error =>
-        error.toLowerCase().includes('memory') ||
-        error.toLowerCase().includes('leak') ||
-        error.toLowerCase().includes('heap')
+      const memoryErrors = errors.filter(
+        error =>
+          error.toLowerCase().includes('memory') ||
+          error.toLowerCase().includes('leak') ||
+          error.toLowerCase().includes('heap'),
       );
 
       expect(memoryErrors.length).toBe(0);
@@ -251,14 +252,14 @@ test.describe('Performance & Regression Testing', () => {
         entities: Array.from({ length: 20 }, (_, i) => ({
           name: `entity${i}`,
           fields: Array.from({ length: 10 }, (_, j) => `field${j}`),
-          type: i % 3 === 0 ? 'product' : i % 3 === 1 ? 'user' : 'data'
+          type: i % 3 === 0 ? 'product' : i % 3 === 1 ? 'user' : 'data',
         })),
         roles: Array.from({ length: 10 }, (_, i) => `role${i}`),
         features: Array.from({ length: 15 }, (_, i) => ({
           name: `feature${i}`,
           description: `Description for feature ${i}`,
-          category: `category${i % 3}`
-        }))
+          category: `category${i % 3}`,
+        })),
       };
 
       await apiMocker.mockSpecificResponse('large data test', largeResponse);
@@ -328,7 +329,7 @@ test.describe('Performance & Regression Testing', () => {
       const prompts = [
         testFixtures.ecommerce.detailedPrompt.substring(0, 200),
         testFixtures.userManagement.detailedPrompt.substring(0, 200),
-        testFixtures.admin.detailedPrompt.substring(0, 200)
+        testFixtures.admin.detailedPrompt.substring(0, 200),
       ];
 
       // Rapid consecutive generations
@@ -382,7 +383,7 @@ test.describe('Performance & Regression Testing', () => {
       const testCases = [
         { name: 'E-commerce', prompt: testFixtures.ecommerce.detailedPrompt },
         { name: 'User Management', prompt: testFixtures.userManagement.detailedPrompt },
-        { name: 'Admin Dashboard', prompt: testFixtures.admin.detailedPrompt }
+        { name: 'Admin Dashboard', prompt: testFixtures.admin.detailedPrompt },
       ];
 
       for (const testCase of testCases) {
@@ -409,7 +410,7 @@ test.describe('Performance & Regression Testing', () => {
         Average: ${avgDuration.toFixed(2)}ms
         Min: ${minDuration.toFixed(2)}ms
         Max: ${maxDuration.toFixed(2)}ms
-        Variance: ${((maxDuration - minDuration) / avgDuration * 100).toFixed(1)}%`);
+        Variance: ${(((maxDuration - minDuration) / avgDuration) * 100).toFixed(1)}%`);
 
       // All benchmarks should be within acceptable range
       benchmarks.forEach(benchmark => {

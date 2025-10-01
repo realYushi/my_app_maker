@@ -25,25 +25,27 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'widget',
             fields: ['id', 'name', 'description', 'value'],
-            type: 'generic'
+            type: 'generic',
           },
           {
             name: 'item',
             fields: ['uuid', 'label', 'category'],
-            type: 'unknown'
-          }
+            type: 'unknown',
+          },
         ],
         roles: ['user', 'manager'],
         features: ['basic_crud', 'search'],
         navigation: [
           { name: 'Widgets', path: '/widgets' },
-          { name: 'Items', path: '/items' }
-        ]
+          { name: 'Items', path: '/items' },
+        ],
       };
 
       await apiMocker.mockSpecificResponse('generic entity test', genericResponse);
 
-      await generationPage.generateApp('Create a generic entity test system with widgets and items');
+      await generationPage.generateApp(
+        'Create a generic entity test system with widgets and items',
+      );
       await generationPage.waitForGenerationResult();
       await generationPage.expectGenerationSuccess();
 
@@ -74,20 +76,20 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'record',
             fields: ['id', 'timestamp', 'data', 'status'],
-            type: 'data'
+            type: 'data',
           },
           {
             name: 'entry',
             fields: ['uuid', 'content', 'metadata'],
-            type: 'content'
-          }
+            type: 'content',
+          },
         ],
         roles: ['operator', 'viewer'],
         features: ['data_entry', 'reporting'],
         navigation: [
           { name: 'Records', path: '/records' },
-          { name: 'Entries', path: '/entries' }
-        ]
+          { name: 'Entries', path: '/entries' },
+        ],
       };
 
       await apiMocker.mockSpecificResponse('data management system', noDomainResponse);
@@ -115,14 +117,12 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'object',
             fields: ['property1', 'property2', 'property3'],
-            type: 'abstract'
-          }
+            type: 'abstract',
+          },
         ],
         roles: ['user'],
         features: ['basic_operations'],
-        navigation: [
-          { name: 'Objects', path: '/objects' }
-        ]
+        navigation: [{ name: 'Objects', path: '/objects' }],
       };
 
       await apiMocker.mockSpecificResponse('abstract system', fallbackResponse);
@@ -156,17 +156,17 @@ test.describe('Fallback Behavior E2E Tests', () => {
         entities: [
           {
             name: 'customer',
-            fields: ['name', 'email', 'phone']
+            fields: ['name', 'email', 'phone'],
             // No type field - legacy format
           },
           {
             name: 'order',
-            fields: ['id', 'total', 'date']
+            fields: ['id', 'total', 'date'],
             // No type field - legacy format
-          }
+          },
         ],
         roles: ['user', 'admin'],
-        features: ['customer_management', 'order_tracking']
+        features: ['customer_management', 'order_tracking'],
       };
 
       await apiMocker.mockSpecificResponse('legacy system', legacyResponse);
@@ -194,16 +194,16 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'item', // Could be product or generic item
             fields: ['name', 'description', 'category'],
-            type: 'item'
+            type: 'item',
           },
           {
             name: 'person', // Could be user or customer
             fields: ['firstName', 'lastName', 'email'],
-            type: 'person'
-          }
+            type: 'person',
+          },
         ],
         roles: ['member', 'moderator'],
-        features: ['item_management', 'person_tracking']
+        features: ['item_management', 'person_tracking'],
       };
 
       await apiMocker.mockSpecificResponse('hybrid system', partialMatchResponse);
@@ -235,11 +235,11 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'product',
             fields: ['name'], // Minimal fields that might cause issues
-            type: 'product'
-          }
+            type: 'product',
+          },
         ],
         roles: ['customer'],
-        features: ['shopping']
+        features: ['shopping'],
       };
 
       await apiMocker.mockSpecificResponse('minimal product', problematicResponse);
@@ -264,11 +264,11 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'entity',
             fields: ['field1', 'field2'],
-            type: 'test'
-          }
+            type: 'test',
+          },
         ],
         roles: ['tester'],
-        features: ['testing']
+        features: ['testing'],
       };
 
       await apiMocker.mockSpecificResponse('service test', testResponse);
@@ -294,10 +294,10 @@ test.describe('Fallback Behavior E2E Tests', () => {
       const incompleteResponse = {
         entities: [
           {
-            name: 'incomplete'
+            name: 'incomplete',
             // Missing fields and type
-          }
-        ]
+          },
+        ],
         // Missing roles and features
       };
 
@@ -326,7 +326,7 @@ test.describe('Fallback Behavior E2E Tests', () => {
         entities: [],
         roles: ['user'],
         features: ['basic'],
-        appName: 'Empty Test App'
+        appName: 'Empty Test App',
       };
 
       await apiMocker.mockSpecificResponse('empty entities', emptyResponse);
@@ -366,9 +366,8 @@ test.describe('Fallback Behavior E2E Tests', () => {
       await generationPage.expectGenerationSuccess();
 
       // Should minimize console errors
-      const relevantErrors = errors.filter(error =>
-        !error.includes('Warning') &&
-        !error.includes('Development')
+      const relevantErrors = errors.filter(
+        error => !error.includes('Warning') && !error.includes('Development'),
       );
 
       expect(relevantErrors.length).toBeLessThan(3); // Allow for minor warnings
@@ -380,11 +379,11 @@ test.describe('Fallback Behavior E2E Tests', () => {
           {
             name: 'accessible_entity',
             fields: ['title', 'description'],
-            type: 'accessible'
-          }
+            type: 'accessible',
+          },
         ],
         roles: ['user'],
-        features: ['accessibility_test']
+        features: ['accessibility_test'],
       };
 
       await apiMocker.mockSpecificResponse('accessibility test', accessibilityResponse);
@@ -403,7 +402,9 @@ test.describe('Fallback Behavior E2E Tests', () => {
 
       if (inputCount > 0) {
         // At least some inputs should have associated labels
-        const labeledInputs = page.locator('input[aria-label], input[aria-labelledby], label input');
+        const labeledInputs = page.locator(
+          'input[aria-label], input[aria-labelledby], label input',
+        );
         expect(await labeledInputs.count()).toBeGreaterThan(0);
       }
     });

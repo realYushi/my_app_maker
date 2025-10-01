@@ -30,11 +30,15 @@ test.describe('Responsive Design E2E Tests', () => {
       await expect(header).toBeVisible();
 
       // Check responsive grid layout
-      const entityGrid = page.locator('.grid.gap-4.sm\\:gap-6.md\\:grid-cols-1.lg\\:grid-cols-2.xl\\:grid-cols-2');
+      const entityGrid = page.locator(
+        '.grid.gap-4.sm\\:gap-6.md\\:grid-cols-1.lg\\:grid-cols-2.xl\\:grid-cols-2',
+      );
       await expect(entityGrid).toBeVisible();
 
       // Verify feature grid layout
-      const featureGrid = page.locator('.grid.gap-4.sm\\:grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-2.xl\\:grid-cols-3');
+      const featureGrid = page.locator(
+        '.grid.gap-4.sm\\:grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-2.xl\\:grid-cols-3',
+      );
       await expect(featureGrid).toBeVisible();
 
       // Check button styling responds to viewport
@@ -289,7 +293,7 @@ test.describe('Responsive Design E2E Tests', () => {
       const testCases = [
         { viewport: viewports.mobile, name: 'Mobile' },
         { viewport: viewports.tablet, name: 'Tablet' },
-        { viewport: viewports.desktop, name: 'Desktop' }
+        { viewport: viewports.desktop, name: 'Desktop' },
       ];
 
       for (const testCase of testCases) {
@@ -306,7 +310,9 @@ test.describe('Responsive Design E2E Tests', () => {
         // Performance should be consistent across viewports
         expect(duration).toBeLessThan(30000);
 
-        console.log(`${testCase.name} (${testCase.viewport.width}x${testCase.viewport.height}): ${duration}ms`);
+        console.log(
+          `${testCase.name} (${testCase.viewport.width}x${testCase.viewport.height}): ${duration}ms`,
+        );
       }
     });
   });

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AIServiceError } from '../services/ai.service';
+import { logger } from '../services/logger.service';
 
 export interface ApiError extends Error {
   statusCode?: number;
@@ -26,7 +27,7 @@ export const errorHandler = (
   }
 
   // Log error details for debugging (but don't expose sensitive info to client)
-  console.error(`Error ${statusCode}: ${err.message}`, {
+  logger.error(`Error ${statusCode}: ${err.message}`, err, {
     stack: err.stack,
     path: req.path,
     method: req.method,

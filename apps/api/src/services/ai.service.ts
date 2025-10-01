@@ -1,6 +1,7 @@
 import { GenerationResult } from '@mini-ai-app-builder/shared-types';
 import { config } from '../config';
 import { errorLoggingService } from './error-logging.service';
+import { logger } from './logger.service';
 import OpenAI from 'openai';
 
 /**
@@ -113,7 +114,7 @@ Respond with only the JSON object, no other text.`;
     if (!this.openai) {
       const result = this.getMockResponse(userText);
       const duration = Date.now() - startTime;
-      console.log(`AI Service (Mock) - Request completed in ${duration}ms`);
+      logger.performance('AI Service (Mock) - Request completed', duration, { mode: 'mock' });
       return result;
     }
 
@@ -155,7 +156,7 @@ Respond with only the JSON object, no other text.`;
       this.validateGenerationResult(parsedResult);
 
       const duration = Date.now() - startTime;
-      console.log(`AI Service - Request completed in ${duration}ms`);
+      logger.performance('AI Service - Request completed', duration, { mode: 'openai' });
 
       return parsedResult;
     } catch (error) {

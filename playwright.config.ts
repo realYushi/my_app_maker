@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'tests/e2e/reports/html' }],
     ['json', { outputFile: 'tests/e2e/reports/results.json' }],
-    ['list']
+    ['list'],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -80,15 +80,15 @@ export default defineConfig({
       command: 'cd apps/web && npm run dev',
       port: 5173,
       reuseExistingServer: !process.env.CI,
-    }
+    },
   ],
 
   /* Global setup */
-  globalSetup: require.resolve('./tests/e2e/utils/global-setup.ts'),
+  globalSetup: './tests/e2e/utils/global-setup.ts',
 
   /* Test timeout */
   timeout: 30000,
   expect: {
-    timeout: 10000
-  }
+    timeout: 10000,
+  },
 });

@@ -1,8 +1,8 @@
-import type { GenerationResult } from '@mini-ai-app-builder/shared-types'
-import { configService } from '../config'
+import type { GenerationResult } from '@mini-ai-app-builder/shared-types';
+import { configService } from '../config';
 
 interface GenerationRequest {
-  text: string
+  text: string;
 }
 
 class GenerationService {
@@ -14,14 +14,18 @@ class GenerationService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private async fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+    timeout: number,
+  ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       const response = await fetch(url, {
         ...options,
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
       return response;
@@ -41,11 +45,11 @@ class GenerationService {
           {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ text: description } as GenerationRequest)
+            body: JSON.stringify({ text: description } as GenerationRequest),
           },
-          this.REQUEST_TIMEOUT
+          this.REQUEST_TIMEOUT,
         );
 
         if (!response.ok) {
@@ -59,7 +63,11 @@ class GenerationService {
 
           // Try to get error message from response
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || errorData.error || `Request failed with status: ${response.status}`);
+          throw new Error(
+            errorData.message ||
+              errorData.error ||
+              `Request failed with status: ${response.status}`,
+          );
         }
 
         return await response.json();
@@ -67,7 +75,11 @@ class GenerationService {
         lastError = error instanceof Error ? error : new Error('Unknown error occurred');
 
         // Don't retry on client errors (4xx) except 429
-        if (error instanceof Error && error.message.includes('status: 4') && !error.message.includes('429')) {
+        if (
+          error instanceof Error &&
+          error.message.includes('status: 4') &&
+          !error.message.includes('429')
+        ) {
           throw lastError;
         }
 
@@ -85,10 +97,12 @@ class GenerationService {
       throw new Error('Request timed out. Please check your connection and try again.');
     }
     if (lastError instanceof TypeError && lastError.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to the server. Please check your connection.');
+      throw new Error(
+        'Network error: Unable to connect to the server. Please check your connection.',
+      );
     }
     throw lastError;
   }
 }
 
-export const generationService = new GenerationService()
+export const generationService = new GenerationService();

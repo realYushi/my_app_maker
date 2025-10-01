@@ -33,6 +33,7 @@ interface Feature {
 **Single Endpoint**: `POST /api/generate`
 
 **Request**:
+
 ```json
 {
   "text": "string (max 10,000 characters)"
@@ -40,6 +41,7 @@ interface Feature {
 ```
 
 **Response** (Success):
+
 ```json
 {
   "appName": "Generated App Name",
@@ -50,6 +52,7 @@ interface Feature {
 ```
 
 **Response** (Error):
+
 ```json
 {
   "error": "Error Type",

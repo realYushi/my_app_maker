@@ -126,9 +126,14 @@ test.describe('Context Detection E2E Tests', () => {
       expect(navLinks.length).toBeGreaterThan(0);
 
       // User management should have some navigation structure
-      expect(navLinks.some(link => link.toLowerCase().includes('employee') ||
-                                   link.toLowerCase().includes('department') ||
-                                   link.toLowerCase().includes('user'))).toBe(true);
+      expect(
+        navLinks.some(
+          link =>
+            link.toLowerCase().includes('employee') ||
+            link.toLowerCase().includes('department') ||
+            link.toLowerCase().includes('user'),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -164,30 +169,37 @@ test.describe('Context Detection E2E Tests', () => {
       expect(navLinks.length).toBeGreaterThan(0);
 
       // Admin should have dashboard-related navigation
-      expect(navLinks.some(link => link.toLowerCase().includes('dashboard') ||
-                                   link.toLowerCase().includes('analytics') ||
-                                   link.toLowerCase().includes('admin'))).toBe(true);
+      expect(
+        navLinks.some(
+          link =>
+            link.toLowerCase().includes('dashboard') ||
+            link.toLowerCase().includes('analytics') ||
+            link.toLowerCase().includes('admin'),
+        ),
+      ).toBe(true);
     });
   });
 
   test.describe('Component Factory Routing Logic', () => {
-    test('should route different entity types to appropriate domain components', async ({ page }) => {
+    test('should route different entity types to appropriate domain components', async ({
+      page,
+    }) => {
       const testCases = [
         {
           prompt: testFixtures.ecommerce.detailedPrompt,
           expectedContext: 'ecommerce',
-          expectedElements: ['button:has-text("Add to Cart")', '.text-2xl.font-bold:has-text("$")']
+          expectedElements: ['button:has-text("Add to Cart")', '.text-2xl.font-bold:has-text("$")'],
         },
         {
           prompt: testFixtures.userManagement.detailedPrompt,
           expectedContext: 'user-management',
-          expectedElements: ['.grid.gap-4']
+          expectedElements: ['.grid.gap-4'],
         },
         {
           prompt: testFixtures.admin.detailedPrompt,
           expectedContext: 'admin',
-          expectedElements: ['.grid.gap-4']
-        }
+          expectedElements: ['.grid.gap-4'],
+        },
       ];
 
       for (const testCase of testCases) {
