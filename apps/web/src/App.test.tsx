@@ -15,18 +15,18 @@ const renderApp = () => {
 describe('App', () => {
   it('renders the main heading', () => {
     renderApp();
-    expect(screen.getByRole('heading', { name: /ai app builder/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /ai app builder/i })).toBeTruthy();
   });
 
   it('renders the description text', () => {
     renderApp();
-    expect(screen.getByText(/describe your app idea and let ai generate/i)).toBeInTheDocument();
+    expect(screen.getByText(/describe your app idea and let ai generate/i)).toBeTruthy();
   });
 
   it('renders the generation form', () => {
     renderApp();
-    expect(screen.getByLabelText(/describe your app idea/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /generate/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/describe your app idea/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /generate/i })).toBeTruthy();
   });
 
   it('has responsive design classes', () => {

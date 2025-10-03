@@ -55,7 +55,7 @@ export class AIService {
         baseURL: config.gemini.baseUrl,
         apiKey: config.gemini.apiKey,
         defaultHeaders: {
-          'HTTP-Referer': 'https://my-app-maker-frontend.onrender.com',
+          'HTTP-Referer': process.env.FRONTEND_URL,
           'X-Title': 'Mini AI App Builder',
         },
         // Allow custom fetch for testing
